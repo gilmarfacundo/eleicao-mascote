@@ -327,6 +327,49 @@ details .jg{margin-top:8px;white-space:pre-line;font-style:italic}
 .jingle .remix{flex:none;height:34px;padding:0 10px;border-radius:99px;background:var(--orange);font-size:12px;font-weight:800;color:#fff}
 .jingle .remix[hidden]{display:none}
 
+/* fase 2: fundos do teams */
+.f2card{display:block;width:100%;text-align:left;background:linear-gradient(135deg,#16295e,#1d4fd6);color:#fff;border-radius:22px;padding:16px;margin:16px 0;box-shadow:var(--shadow)}
+.f2card .k{font-size:11px;font-weight:900;letter-spacing:.1em;color:var(--orange-2)}
+.f2card h3{font-size:19px;font-weight:900;margin:2px 0 4px}
+.f2card p{font-size:13px;opacity:.9}
+.f2card .mbar{background:rgba(255,255,255,.18)}
+.f2card .go{display:inline-block;margin-top:8px;font-weight:800;font-size:14px;color:var(--orange-2)}
+.f2geral{display:flex;align-items:center;gap:16px;background:#fff;border-radius:22px;box-shadow:var(--shadow);padding:16px;margin-bottom:14px}
+.anel{flex:none;width:96px;height:96px;position:relative}
+.anel svg{transform:rotate(-90deg)}
+.anel circle{fill:none;stroke-width:10}
+.anel .bg{stroke:#eef2fb}
+.anel .fg{stroke:url(#gradAnel);stroke-linecap:round;transition:stroke-dashoffset 1s}
+.anel b{position:absolute;inset:0;display:grid;place-items:center;font-size:22px;font-weight:900;font-family:"Space Mono",monospace;color:var(--navy)}
+.f2geral small{color:var(--muted);font-size:13px}
+.pilares{display:grid;gap:10px;margin-bottom:16px}
+.pil{display:grid;grid-template-columns:44px 1fr;gap:10px;align-items:center;background:#fff;border-radius:16px;padding:10px 12px;box-shadow:var(--shadow)}
+.pil img{width:44px;height:44px;object-fit:contain}
+.pil .top2{display:flex;justify-content:space-between;gap:8px;font-size:13px;font-weight:800}
+.pil .top2 span{font-family:"Space Mono",monospace;color:var(--navy)}
+.pil small{color:var(--muted);font-size:12px}
+.pil .mbar{height:10px;margin:5px 0 3px}
+.fundos{display:grid;gap:12px}
+@media(min-width:620px){.fundos{grid-template-columns:1fr 1fr}}
+.fundo{background:#fff;border-radius:18px;box-shadow:var(--shadow);overflow:hidden}
+.fundo .prev{aspect-ratio:16/9;background:#dfe5f2 center/cover no-repeat;position:relative}
+.fundo.lock .prev{filter:blur(6px) grayscale(.6)}
+.fundo .selo{position:absolute;top:10px;right:10px;background:rgba(11,47,122,.9);color:#fff;font-size:12px;font-weight:900;padding:4px 10px;border-radius:99px}
+.fundo .tx{padding:12px 14px;display:flex;align-items:center;gap:10px}
+.fundo .tx div{flex:1;min-width:0}
+.fundo .tx b{display:block;font-size:15px}
+.fundo .tx small{color:var(--muted);font-size:12px}
+.fundo .tx .btn{padding:10px 12px;font-size:13px;flex:none}
+.fundo .cad{position:relative;margin-top:-56%;height:56%;display:grid;place-items:center;font-size:34px;pointer-events:none}
+.teamsdica{background:#f2f6ff;border:1px solid #cdd9f5;border-radius:16px;padding:14px;font-size:14px;margin-top:16px}
+.teamsdica ol{margin:8px 0 0 18px;display:grid;gap:4px}
+.admin .linha{background:#fff;border-radius:16px;box-shadow:var(--shadow);padding:12px;margin-bottom:10px}
+.admin .linha b{display:flex;align-items:center;gap:8px;font-size:14px;margin-bottom:8px}
+.admin .linha b img{width:30px;height:30px;object-fit:contain}
+.admin label{display:block;font-size:12px;font-weight:800;color:var(--muted);margin:6px 0 3px}
+.admin input{width:100%;padding:11px;border:2px solid var(--line);border-radius:12px;font:inherit;font-size:16px}
+.admin .dois{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+
 /* ---------- barra de ação ---------- */
 .actionbar{position:fixed;left:0;right:0;bottom:0;z-index:30;background:rgba(255,255,255,.97);backdrop-filter:blur(10px);border-top:1px solid var(--line);padding:10px 16px calc(10px + env(safe-area-inset-bottom))}
 .actionbar .in{max-width:720px;margin:0 auto;display:flex;gap:10px;align-items:center}
@@ -375,6 +418,7 @@ footer{text-align:center;color:var(--muted);font-size:12px;padding:18px 16px 8px
     </div>
 
     <div class="missoes" data-missoes></div>
+    <div data-f2card></div>
 
     <div class="card" style="margin-top:16px">
       <h3>Como funciona</h3>
@@ -501,6 +545,7 @@ footer{text-align:center;color:var(--muted);font-size:12px;padding:18px 16px 8px
     </div>
 
     <div class="missoes" data-missoes></div>
+    <div data-f2card></div>
     <div class="reopen" id="reopen" hidden></div>
     <div class="stack" id="jornadaBox">
       <div class="card">
@@ -518,6 +563,39 @@ footer{text-align:center;color:var(--muted);font-size:12px;padding:18px 16px 8px
         <button class="btn ghost" data-go="debate">Debate de hoje</button>
       </div>
     </div>
+  </section>
+
+  <!-- FASE 2 · FUNDOS DO TEAMS -->
+  <section class="scr" id="s-fundos">
+    <span class="kicker">Fase 2 · Metas do processo</span>
+    <h2>Fundos do Teams</h2>
+    <p class="lead">A cada 20% das metas do processo cumpridas, a equipe libera um novo fundo para as reuniões. Em 100%, libera o fundo com o <b>mascote oficial eleito</b>.</p>
+    <svg width="0" height="0" style="position:absolute"><defs><linearGradient id="gradAnel"><stop offset="0" stop-color="#1d4fd6"/><stop offset="1" stop-color="#f47a1f"/></linearGradient></defs></svg>
+    <div class="f2geral">
+      <div class="anel"><svg viewBox="0 0 100 100" width="96" height="96"><circle class="bg" cx="50" cy="50" r="42"/><circle class="fg" id="anelFg" cx="50" cy="50" r="42" stroke-dasharray="264" stroke-dashoffset="264"/></svg><b id="f2Pct">0%</b></div>
+      <div><b style="font-size:16px" id="f2Titulo">Metas do processo</b><br><small id="f2Sub">Média dos 4 pilares, cada um limitado a 100%.</small></div>
+    </div>
+    <div class="pilares" id="pilares"></div>
+    <div class="fundos" id="fundos"></div>
+    <div class="teamsdica">
+      <b>Como usar no Teams</b>
+      <ol>
+        <li>Toque em <b>Baixar fundo</b> e salve a imagem no computador.</li>
+        <li>Numa reunião, abra <b>Efeitos de vídeo</b> (ou <b>Efeitos e avatares</b>) e vá em <b>Planos de fundo</b>.</li>
+        <li>Toque em <b>Adicionar novo</b> e escolha a imagem baixada.</li>
+      </ol>
+    </div>
+    <p class="note" id="f2Atualizado"></p>
+  </section>
+
+  <!-- PAINEL DA COORDENAÇÃO (abre com ?admin no endereço) -->
+  <section class="scr admin" id="s-admin">
+    <span class="kicker">Painel da coordenação</span>
+    <h2>Lançar metas do processo</h2>
+    <p class="lead">Atualize o realizado de cada pilar. O progresso e os fundos liberados mudam na hora para toda a equipe.</p>
+    <div id="adminLinhas"></div>
+    <div class="linha"><label for="adminPin">PIN da coordenação</label><input id="adminPin" type="password" autocomplete="off" placeholder="NOV-XXXX-XXXX"></div>
+    <div class="err" id="adminErr"></div>
   </section>
 
   <footer>Ação interna de engajamento da Coordenação de Novação do FCVS · CECVS-SP<br>Participação voluntária · voto secreto · sem relação com eleições oficiais, partidos ou candidatos.<br>O nome informado é usado apenas para contar a participação e encerrar esta ação.</footer>
@@ -720,6 +798,15 @@ const API = {
     const all=LS.get('urna_demo',[]); const m=chave(nome);
     return {votou_hoje:all.some(v=>v.chave===m&&v.dia===hojeISO()), dias:all.filter(v=>v.chave===m).length};
   },
+  async metas(){
+    if(SB){ const {data,error}=await SB.rpc('progresso_metas'); if(error) throw error; return data||[]; }
+    return LS.get('urna_metas_demo', METAS_PADRAO);
+  },
+  async salvarMetas(pin, dados){
+    if(SB){ const {data,error}=await SB.rpc('atualizar_metas',{p_pin:pin, p_dados:dados}); if(error) throw error; return data; }
+    const atual=LS.get('urna_metas_demo', METAS_PADRAO).map(m=>{ const d=dados.find(x=>x.pilar===m.pilar)||{}; return {...m, ...d, atualizado_em:new Date().toISOString()}; });
+    LS.set('urna_metas_demo', atual); return {ok:true};
+  },
   async apuracao(){
     if(SB){
       const {data,error}=await SB.rpc('apuracao');
@@ -771,7 +858,7 @@ let ultimoVoto = null;                                // {voto, antes, dias} do 
 function destinoPermitido(t){
   const st = estado();
   const encerrada = hojeISO() > CONFIG.FIM;
-  if(t==='inicio') return t;
+  if(t==='inicio' || t==='fundos' || t==='admin') return t;
   if(t==='apuracao' && encerrada && !(eleitor && validado)) return t;   // resultado final é público
   if(!eleitor) return 'titulo';
   if(t==='titulo') return t;
@@ -808,6 +895,8 @@ function ir(t, {push=true} = {}){
   if(t==='debate')   { renderDebate(); carregarParticipacao().then(()=>tela==='debate' && renderDebate()); }
   if(t==='urna')     { modo='num'; digitos=''; renderColinha(); render(); }
   if(t==='apuracao') { renderApuracaoTela(); carregarParticipacao(); }
+  if(t==='fundos')   carregarMetas();
+  if(t==='admin')    renderAdmin();
   if(t==='inicio')   carregarParticipacao();
 
   configurarBarra(t);
@@ -854,6 +943,10 @@ function configurarBarra(t){
       break;
     case 'apuracao':
       label='Voltar ao início'; acao=()=>ir('inicio'); cor='ghost'; break;
+    case 'fundos':
+      label='Voltar ao início'; acao=()=>ir('inicio'); cor='ghost'; break;
+    case 'admin':
+      voltar='fundos'; label='Salvar metas'; acao=salvarAdmin; cor='orange'; break;
   }
   back.hidden = !voltar; back.onclick = ()=>ir(voltar);
   cta.hidden = !label; cta.textContent = label||''; cta.onclick = acao;
@@ -1495,8 +1588,8 @@ function fecharPremio(){ $('#premioModal').classList.remove('on'); }
 $('#premioModal').addEventListener('click', e=>{ if(e.target.id==='premioModal') fecharPremio(); });
 
 function carregarImg(src){ return new Promise((ok,err)=>{ const i=new Image(); i.onload=()=>ok(i); i.onerror=err; i.src=src; }); }
-function baixarCanvas(cv, nome){
-  cv.toBlob(b=>{ const a=document.createElement('a'); a.href=URL.createObjectURL(b); a.download=nome; document.body.appendChild(a); a.click(); setTimeout(()=>{ URL.revokeObjectURL(a.href); a.remove(); }, 1500); }, 'image/png');
+function baixarCanvas(cv, nome, tipo='image/png', q){
+  cv.toBlob(b=>{ const a=document.createElement('a'); a.href=URL.createObjectURL(b); a.download=nome; document.body.appendChild(a); a.click(); setTimeout(()=>{ URL.revokeObjectURL(a.href); a.remove(); }, 1500); }, tipo, q);
 }
 function textoCentro(ctx, txt, y, font, cor){ ctx.font=font; ctx.fillStyle=cor; ctx.textAlign='center'; ctx.fillText(txt, ctx.canvas.width/2, y); }
 async function baixarWallpaper(id){
@@ -1761,6 +1854,205 @@ function confete(){
 }
 
 /* =====================================================================
+   FASE 2 — FUNDOS DO TEAMS liberados pelas metas do processo
+   ===================================================================== */
+const METAS_PADRAO = [
+  {pilar:'produtividade', descricao:'Processos concluídos no período',   atual:0, meta:100},
+  {pilar:'pendencias',    descricao:'Processos antigos regularizados',   atual:0, meta:50},
+  {pilar:'integracao',    descricao:'Processos concluídos no prazo (%)', atual:0, meta:95},
+  {pilar:'qualidade',     descricao:'Análises sem retrabalho (%)',       atual:0, meta:98},
+];
+const PILAR_MASCOTE = {produtividade:'novi', pendencias:'nova', integracao:'elo', qualidade:'meioca'};
+const FUNDOS = [
+  { pct:20,  id:'marca',    nome:'Azul Novação',        desc:'As cores da Coordenação' },
+  { pct:40,  id:'equipe',   nome:'Equipe em movimento', desc:'Os quatro candidatos juntos' },
+  { pct:60,  id:'painel',   nome:'Painel de metas',     desc:'Indicadores ao fundo' },
+  { pct:80,  id:'reta',     nome:'Reta final',          desc:'A caminho dos 100%' },
+  { pct:100, id:'vencedor', nome:'Mascote oficial',     desc:'O vencedor da eleição' },
+];
+let METAS = METAS_PADRAO.map(m=>({...m})), F2PCT = 0, VENC = undefined;
+const pctPilar = m => Math.max(0, Math.min(100, (+m.atual||0) / Math.max(+m.meta||0, 0.0001) * 100));
+const fmtNum = n => (+n).toLocaleString('pt-BR',{maximumFractionDigits:1});
+
+async function carregarMetas(){
+  try{ const r=await API.metas(); if(r && r.length) METAS=r; }catch(e){ console.error(e); }
+  F2PCT = METAS.reduce((a,m)=>a+pctPilar(m),0) / METAS.length;
+  if(hojeISO()>CONFIG.FIM && VENC===undefined) VENC = await descobrirVencedor();
+  renderF2Card(); if(tela==='fundos') renderFundos();
+}
+async function descobrirVencedor(){
+  try{
+    const rows=(await API.apuracao()).filter(r=>r.candidato!=='_total' && +r.turno===turnoAtual());
+    const v=candsAtivos().map(c=>({c, n:+(rows.find(r=>r.candidato===c.num)?.total||0)})).sort((a,b)=>b.n-a.n);
+    if(!v[0] || !v[0].n) return null;
+    if(v[1] && v[1].n===v[0].n) return 'empate';
+    return v[0].c;
+  }catch(e){ console.error(e); return null; }
+}
+function renderF2Card(){
+  const prox = FUNDOS.find(f=>F2PCT < f.pct);
+  const html = `<button class="f2card" onclick="ir('fundos')">
+    <div class="k">FASE 2 · METAS DO PROCESSO</div>
+    <h3>🖥️ Fundos do Teams</h3>
+    <p>${prox ? `Equipe em <b>${Math.floor(F2PCT)}%</b> das metas. Próximo fundo em ${prox.pct}%: <b>${prox.nome}</b>.` : '<b>100% das metas!</b> Todos os fundos liberados.'}</p>
+    <div class="mbar"><i style="width:${Math.min(100,F2PCT)}%"></i></div>
+    <span class="go">Ver fundos →</span>
+  </button>`;
+  $$('[data-f2card]').forEach(el=>el.innerHTML=html);
+}
+function renderFundos(){
+  const pct=Math.min(100,F2PCT);
+  $('#f2Pct').textContent = Math.floor(pct)+'%';
+  $('#anelFg').style.strokeDashoffset = 264*(1-pct/100);
+  const liberados = FUNDOS.filter(f=>pct>=f.pct).length;
+  $('#f2Titulo').textContent = liberados ? `${liberados} de ${FUNDOS.length} fundos liberados` : 'Nenhum fundo liberado ainda';
+  $('#pilares').innerHTML = METAS.map(m=>{
+    const c=CANDS.find(x=>x.id===PILAR_MASCOTE[m.pilar]), p=pctPilar(m);
+    return `<div class="pil"><img src="${IMG[c.id]}" alt=""><div>
+      <div class="top2">${esc(c.pilar)}<span>${Math.floor(p)}%</span></div>
+      <div class="mbar"><i style="width:${p}%"></i></div>
+      <small>${esc(m.descricao)}: ${fmtNum(m.atual)} de ${fmtNum(m.meta)}</small></div></div>`;
+  }).join('');
+  $('#fundos').innerHTML = FUNDOS.map(f=>{
+    const ok = pct>=f.pct, eleicaoFim = hojeISO()>CONFIG.FIM;
+    let sub = ok ? f.desc : `Libera com ${f.pct}% das metas`, botao = ok ? `<button class="btn" onclick="baixarFundo('${f.id}')">Baixar fundo</button>` : '';
+    if(f.id==='vencedor' && ok && !eleicaoFim){ sub=`Meta batida! Aparece após a apuração (${dataBR(dataAbre())})`; botao=''; }
+    if(f.id==='vencedor' && ok && eleicaoFim && !VENC){ sub='Aguardando o resultado da eleição'; botao=''; }
+    if(f.id==='vencedor' && ok && VENC==='empate'){ sub='Empate na eleição: a coordenação define o desempate'; botao=''; }
+    const prevOk = ok && !(f.id==='vencedor' && (!eleicaoFim || !VENC || VENC==='empate'));
+    return `<div class="fundo ${prevOk?'':'lock'}">
+      <div class="prev" data-prev="${f.id}"><span class="selo">${f.pct}%</span></div>
+      ${prevOk?'':'<div class="cad">🔒</div>'}
+      <div class="tx"><div><b>${f.nome}</b><small>${sub}</small></div>${botao}</div>
+    </div>`;
+  }).join('');
+  // miniaturas (as trancadas ficam borradas; o vencedor só aparece depois da apuração)
+  FUNDOS.forEach(async f=>{
+    const el=document.querySelector(`[data-prev="${f.id}"]`); if(!el) return;
+    if(f.id==='vencedor' && !(VENC && VENC!=='empate')) { el.style.backgroundImage='linear-gradient(135deg,#0b2f7a,#f47a1f)'; return; }
+    try{ el.style.backgroundImage=`url(${await miniatura(f.id)})`; }catch(e){}
+  });
+  const ult = METAS.map(m=>m.atualizado_em).filter(Boolean).sort().pop();
+  $('#f2Atualizado').textContent = ult ? 'Metas atualizadas em ' + new Intl.DateTimeFormat('pt-BR',{timeZone:TZ,dateStyle:'short',timeStyle:'short'}).format(new Date(ult)) + '.' : '';
+}
+
+/* desenho dos fundos (1920×1080, espaço livre no centro para o rosto) */
+const MINI = {}, RECORTES = {};
+function holofote(ctx, cx, cy, rx, ry, cor='rgba(236,243,255,.95)'){   // luz no chão sob o mascote
+  ctx.save(); ctx.translate(cx,cy); ctx.scale(1, ry/rx);
+  const g=ctx.createRadialGradient(0,0,0,0,0,rx); g.addColorStop(0,cor); g.addColorStop(.55,cor.replace(/[\d.]+\)$/,'.55)')); g.addColorStop(1,'rgba(236,243,255,0)');
+  ctx.fillStyle=g; ctx.beginPath(); ctx.arc(0,0,rx,0,7); ctx.fill(); ctx.restore();
+}
+async function recortado(src){
+  if(RECORTES[src]) return RECORTES[src];
+  const img=await carregarImg(src), c=document.createElement('canvas'); c.width=img.width; c.height=img.height;
+  const x=c.getContext('2d'); x.drawImage(img,0,0);
+  const d=x.getImageData(0,0,c.width,c.height), px=d.data, W=c.width, H=c.height, vis=new Uint8Array(W*H), fila=[];
+  const claro=i=>{ const r=px[i*4],g=px[i*4+1],b=px[i*4+2]; return r>246 && g>246 && b>246; };
+  for(let i=0;i<W;i++){ fila.push(i, (H-1)*W+i); } for(let j=0;j<H;j++){ fila.push(j*W, j*W+W-1); }
+  while(fila.length){ const i=fila.pop(); if(vis[i] || !claro(i)) continue; vis[i]=1; px[i*4+3]=0;
+    const cx=i%W, cy=(i/W)|0; if(cx>0) fila.push(i-1); if(cx<W-1) fila.push(i+1); if(cy>0) fila.push(i-W); if(cy<H-1) fila.push(i+W); }
+  // borda suave: pixels vizinhos ao recorte ficam semitransparentes
+  for(let i=0;i<W*H;i++){ if(vis[i]) continue; const cx=i%W, cy=(i/W)|0;
+    if((cx>0&&vis[i-1])||(cx<W-1&&vis[i+1])||(cy>0&&vis[i-W])||(cy<H-1&&vis[i+W])) px[i*4+3]=150; }
+  x.putImageData(d,0,0);
+  // esfuma a base (onde a foto original foi cortada) para a sombra do chão sumir aos poucos
+  x.globalCompositeOperation='destination-in';
+  const gf=x.createLinearGradient(0,H*.86,0,H); gf.addColorStop(0,'rgba(0,0,0,1)'); gf.addColorStop(1,'rgba(0,0,0,0)');
+  x.fillStyle=gf; x.fillRect(0,0,W,H); x.globalCompositeOperation='source-over';
+  return RECORTES[src]=c;
+}
+async function desenharFundo(id){
+  const W=1920, H=1080, cv=document.createElement('canvas'); cv.width=W; cv.height=H; const ctx=cv.getContext('2d');
+  const grad=(a,b)=>{ const g=ctx.createLinearGradient(0,0,W,H); g.addColorStop(0,a); g.addColorStop(1,b); return g; };
+  const txt=(t,x,y,font,cor,al='left')=>{ ctx.font=font; ctx.fillStyle=cor; ctx.textAlign=al; ctx.fillText(t,x,y); };
+  const rodape=()=>{ ctx.fillStyle='rgba(255,255,255,.85)'; ctx.fillRect(0,H-64,W,64); txt('Coordenação de Novação do FCVS · CECVS-SP',60,H-22,'700 28px Archivo, sans-serif','#0b2f7a'); txt('NOVAÇÃO',W-60,H-22,'900 30px Archivo, sans-serif','#f47a1f','right'); };
+  if(id==='marca'){
+    ctx.fillStyle=grad('#0b2f7a','#1d4fd6'); ctx.fillRect(0,0,W,H);
+    ctx.strokeStyle='rgba(255,255,255,.06)'; ctx.lineWidth=40; for(let x=-H;x<W;x+=140){ ctx.beginPath(); ctx.moveTo(x,H); ctx.lineTo(x+H,0); ctx.stroke(); }
+    ctx.fillStyle='#f47a1f'; ctx.fillRect(60,120,180,12);
+    txt('NOVAÇÃO',60,250,'900 120px Archivo, sans-serif','rgba(255,255,255,.95)');
+    txt('Nossa evolução em resultados',62,310,'700 40px Archivo, sans-serif','#ffa24d');
+    rodape();
+  } else if(id==='equipe'){
+    ctx.fillStyle=grad('#eaf0ff','#ffffff'); ctx.fillRect(0,0,W,H);
+    ctx.fillStyle='rgba(29,79,214,.08)'; for(let i=0;i<10;i++){ ctx.beginPath(); ctx.arc(200+i*190, 200+(i%3)*260, 90+(i%4)*30, 0, 7); ctx.fill(); }
+    const img=await recortado(document.querySelector('.hero img').src); const w=1050, hh=img.height*w/img.width;
+    holofote(ctx, W-w/2-40, H-64-10-hh*.08, w*.55, hh*.1, 'rgba(210,222,245,.9)');
+    ctx.drawImage(img, W-w-40, H-64-hh-10, w, hh);
+    txt('Equipe Novação',60,170,'900 92px Archivo, sans-serif','#0b2f7a');
+    txt('Juntos em cada meta',62,235,'700 42px Archivo, sans-serif','#f47a1f');
+    rodape();
+  } else if(id==='painel'){
+    ctx.fillStyle=grad('#0a1a45','#16295e'); ctx.fillRect(0,0,W,H);
+    ctx.strokeStyle='rgba(255,255,255,.07)'; ctx.lineWidth=2; for(let y=120;y<H-64;y+=90){ ctx.beginPath(); ctx.moveTo(0,y); ctx.lineTo(W,y); ctx.stroke(); }
+    const barras=[220,300,260,380,340,460,420,560,520,660];
+    barras.forEach((bh,i)=>{ const x=W-1000+i*95; ctx.fillStyle= i===barras.length-1 ? '#f47a1f' : `rgba(59,108,240,${.35+i*.05})`; ctx.fillRect(x,H-64-bh,64,bh); });
+    ctx.strokeStyle='#7fe3ff'; ctx.lineWidth=8; ctx.beginPath(); barras.forEach((bh,i)=>{ const x=W-1000+i*95+32, y=H-64-bh-40; i?ctx.lineTo(x,y):ctx.moveTo(x,y); }); ctx.stroke();
+    txt('Metas em evolução',60,170,'900 88px Archivo, sans-serif','#ffffff');
+    txt('Produtividade · Pendências · Prazos · Qualidade',62,230,'700 36px Archivo, sans-serif','#ffa24d');
+    rodape();
+  } else if(id==='reta'){
+    ctx.fillStyle=grad('#1d4fd6','#0b2f7a'); ctx.fillRect(0,0,W,H);
+    const cores=['#f47a1f','#ffa24d','#ffffff','#7fe3ff','#4fd18b'];
+    for(let i=0;i<260;i++){ const borda=Math.random()<.5; const x= borda ? (Math.random()<.5? Math.random()*420 : W-Math.random()*420) : Math.random()*W; const y= borda ? Math.random()*H : (Math.random()<.5? Math.random()*160 : H-64-Math.random()*160);
+      if(x<1150 && y<320) continue;
+      ctx.save(); ctx.translate(x,y); ctx.rotate(Math.random()*6); ctx.fillStyle=cores[i%5]; ctx.fillRect(-9,-4,18,8); ctx.restore(); }
+    txt('Reta final',60,190,'900 110px Archivo, sans-serif','#ffffff');
+    txt('80% das metas cumpridas pela equipe',62,255,'700 40px Archivo, sans-serif','#ffa24d');
+    rodape();
+  } else if(id==='vencedor'){
+    const c=VENC; ctx.fillStyle=grad('#0b2f7a','#1d4fd6'); ctx.fillRect(0,0,W,H);
+    const rg=ctx.createRadialGradient(W-480,H/2,40,W-480,H/2,560); rg.addColorStop(0,'rgba(255,162,77,.55)'); rg.addColorStop(1,'rgba(255,162,77,0)'); ctx.fillStyle=rg; ctx.fillRect(0,0,W,H);
+    const img=await recortado(IMG[c.id]); const hh=880, w=img.width*hh/img.height, y0=(H-64-hh)/2+10;
+    holofote(ctx, W-480, y0+hh-hh*.06, w*.8, hh*.11);
+    ctx.drawImage(img, W-480-w/2, y0, w, hh);
+    txt('MASCOTE OFICIAL',60,150,'900 44px Archivo, sans-serif','#ffa24d');
+    txt(c.nome,56,290,'900 150px Archivo, sans-serif','#ffffff');
+    txt(c.slogan,62,355,'700 40px Archivo, sans-serif','#ffffff');
+    txt('100% das metas · Coordenação de Novação',62,410,'600 30px Archivo, sans-serif','rgba(255,255,255,.75)');
+    rodape();
+  }
+  return cv;
+}
+async function miniatura(id){
+  if(MINI[id]) return MINI[id];
+  const cv=await desenharFundo(id), m=document.createElement('canvas'); m.width=480; m.height=270;
+  m.getContext('2d').drawImage(cv,0,0,480,270); return MINI[id]=m.toDataURL('image/jpeg',.8);
+}
+async function baixarFundo(id){
+  const f=FUNDOS.find(x=>x.id===id); if(Math.min(100,F2PCT) < f.pct) return;
+  if(id==='vencedor' && !(VENC && VENC!=='empate')) return;
+  const cv=await desenharFundo(id);
+  baixarCanvas(cv, `fundo-teams-${id}.jpg`, 'image/jpeg', .9);
+  toast('Fundo pronto! Veja nos seus downloads.');
+}
+
+/* painel da coordenação */
+function renderAdmin(){
+  API.metas().then(r=>{ if(r && r.length) METAS=r; desenhar(); }).catch(()=>desenhar());
+  function desenhar(){
+    $('#adminLinhas').innerHTML = METAS.map(m=>{ const c=CANDS.find(x=>x.id===PILAR_MASCOTE[m.pilar]);
+      return `<div class="linha" data-pilar="${m.pilar}"><b><img src="${IMG[c.id]}" alt="">${esc(c.pilar)}</b>
+        <label>Indicador</label><input data-k="descricao" value="${esc(m.descricao)}" maxlength="80">
+        <div class="dois"><div><label>Realizado</label><input data-k="atual" type="number" inputmode="decimal" step="any" min="0" value="${+m.atual}"></div>
+        <div><label>Meta</label><input data-k="meta" type="number" inputmode="decimal" step="any" min="0" value="${+m.meta}"></div></div></div>`; }).join('');
+  }
+}
+async function salvarAdmin(){
+  const pin=$('#adminPin').value.trim(); $('#adminErr').textContent='';
+  if(SB && !pin) return $('#adminErr').textContent='Informe o PIN da coordenação.';
+  const dados=[...document.querySelectorAll('#adminLinhas .linha')].map(l=>({ pilar:l.dataset.pilar,
+    descricao:l.querySelector('[data-k=descricao]').value, atual:+l.querySelector('[data-k=atual]').value||0, meta:+l.querySelector('[data-k=meta]').value||0 }));
+  if(dados.some(d=>d.meta<=0)) return $('#adminErr').textContent='A meta de cada pilar precisa ser maior que zero.';
+  try{
+    const r=await API.salvarMetas(pin, dados);
+    if(!r || !r.ok) return $('#adminErr').textContent = r && r.erro==='pin' ? 'PIN incorreto.' : 'Não foi possível salvar.';
+    toast('Metas atualizadas! ✅'); await carregarMetas(); ir('fundos');
+  }catch(e){ console.error(e); $('#adminErr').textContent='Falha de conexão. Tente de novo.'; }
+}
+
+/* =====================================================================
    INÍCIO DA APLICAÇÃO
    ===================================================================== */
 (async function iniciar(){
@@ -1768,6 +2060,7 @@ function confete(){
   if(turnoAtual()===2) $('#regra2t').innerHTML=`<b>Segundo turno</b>: ${candsAtivos().map(c=>c.nome+' ('+c.num+')').join(' x ')}.`;
   $$('.dataFim').forEach(e=>e.textContent=dataBR(CONFIG.FIM)); $$('.dataAbre').forEach(e=>e.textContent=dataBR(dataAbre()));
   carregarParticipacao(); setInterval(()=>{ if(['inicio','apuracao','debate'].includes(tela)) carregarParticipacao(); }, 60000);
+  carregarMetas(); setInterval(()=>{ if(['inicio','apuracao','fundos'].includes(tela)) carregarMetas(); }, 60000);
   countdown(); setInterval(()=>{ countdown(); if(tela==='apuracao') tickLacre(); },1000); tickLacre();
   if(eleitor && validado) await carregarSituacao();
 
@@ -1775,6 +2068,8 @@ function confete(){
   const salva = SS.get('urna_tela');
   let inicial = (eleitor && validado && salva && salva!=='urna') ? salva : 'inicio';
   if(inicial==='fim') inicial='apuracao';
+  if(new URLSearchParams(location.search).has('admin')) inicial='admin';
+  else if(location.hash==='#fundos') inicial='fundos';
   history.replaceState({t:inicial}, '', '#'+inicial);
   ir(inicial, {push:false});
 })();
