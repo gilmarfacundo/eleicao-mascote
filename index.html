@@ -370,6 +370,12 @@ details .jg{margin-top:8px;white-space:pre-line;font-style:italic}
 .admin input{width:100%;padding:11px;border:2px solid var(--line);border-radius:12px;font:inherit;font-size:16px}
 .admin .dois{display:grid;grid-template-columns:1fr 1fr;gap:8px}
 
+.simbtn{position:fixed;left:12px;bottom:calc(var(--bar-h) + env(safe-area-inset-bottom) + 12px);z-index:40;background:#7a2cbf;color:#fff;font-weight:800;font-size:13px;padding:9px 14px;border-radius:99px;box-shadow:0 8px 20px rgba(122,44,191,.4)}
+.simgrid{display:grid;gap:8px;margin-top:12px}
+.simgrid .btn{width:100%;font-size:14px}
+.simgrid h4{font-size:13px;font-weight:900;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;margin-top:8px}
+.simtres{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+
 /* ---------- barra de ação ---------- */
 .actionbar{position:fixed;left:0;right:0;bottom:0;z-index:30;background:rgba(255,255,255,.97);backdrop-filter:blur(10px);border-top:1px solid var(--line);padding:10px 16px calc(10px + env(safe-area-inset-bottom))}
 .actionbar .in{max-width:720px;margin:0 auto;display:flex;gap:10px;align-items:center}
@@ -613,6 +619,7 @@ footer{text-align:center;color:var(--muted);font-size:12px;padding:18px 16px 8px
   <div class="modal"><button class="fechar" onclick="fecharPremio()" aria-label="Fechar">✕</button><div id="premioBody"></div></div>
 </div>
 
+<button class="simbtn" id="simBtn" hidden onclick="abrirSim()">🧪 Simulação</button>
 <div class="toast" id="toast" role="status"></div>
 <canvas class="confetti" id="confetti"></canvas>
 
@@ -738,11 +745,14 @@ const BADGES = [
 /* ---------------- utilidades de data (fuso de Brasília) ---------------- */
 const TZ = 'America/Sao_Paulo';
 const fmt = new Intl.DateTimeFormat('en-CA',{timeZone:TZ,year:'numeric',month:'2-digit',day:'2-digit'});
-const hojeISO = () => fmt.format(new Date());
+const SIM = new URLSearchParams(location.search).has('simular');          // ?simular = teste completo sem tocar no banco
+const SIM_FIM = SIM && (()=>{ try{ return sessionStorage.getItem('sim_fim')==='1'; }catch(e){ return false; } })();
+const DIA_APOS_FIM = (()=>{ const [y,m,d]=CONFIG.FIM.split('-').map(Number); return new Date(Date.UTC(y,m-1,d+1)).toISOString().slice(0,10); })();
+const hojeISO = () => SIM_FIM ? DIA_APOS_FIM : fmt.format(new Date());
 const parseISO = s => { const [y,m,d]=s.split('-').map(Number); return new Date(Date.UTC(y,m-1,d)); };
 const isoOf = dt => dt.toISOString().slice(0,10);
 const isUtil = s => { const w=parseISO(s).getUTCDay(); return w!==0 && w!==6; };
-const TESTE = new URLSearchParams(location.search).has('teste');
+const TESTE = new URLSearchParams(location.search).has('teste') || (SIM && !SIM_FIM);
 
 function diasDeVotacao(){
   const out=[]; let d=parseISO(CONFIG.INICIO); const f=parseISO(CONFIG.FIM);
@@ -776,7 +786,7 @@ const LS = {
 };
 
 /* ---------------- backend: Supabase ou demonstração ---------------- */
-const SB = (CONFIG.SUPABASE_URL && CONFIG.SUPABASE_ANON_KEY && window.supabase)
+const SB = (!SIM && CONFIG.SUPABASE_URL && CONFIG.SUPABASE_ANON_KEY && window.supabase)
   ? window.supabase.createClient(CONFIG.SUPABASE_URL, CONFIG.SUPABASE_ANON_KEY) : null;
 
 const API = {
@@ -2053,10 +2063,53 @@ async function salvarAdmin(){
 }
 
 /* =====================================================================
+   MODO SIMULAÇÃO (?simular) — tudo fica só neste navegador
+   ===================================================================== */
+function abrirSim(){
+  const n=LS.get('urna_demo',[]).length;
+  $('#premioBody').innerHTML = `<h3>🧪 Modo simulação</h3>
+    <p class="lead" style="margin:0">Nada aqui vai para o banco oficial nem dispara WhatsApp. ${SIM_FIM?'<b>Eleição encerrada (simulada).</b>':'<b>Eleição em andamento.</b>'} Votos simulados: <b>${n}</b>.</p>
+    <div class="simgrid">
+      <h4>Eleição</h4>
+      <div class="simtres"><button class="btn ghost" onclick="simVotos(40)">+40 votos</button><button class="btn ghost" onclick="simVotos(200)">+200 votos</button><button class="btn ghost" onclick="simVotos(0,true)">Empate</button></div>
+      ${SIM_FIM ? `<button class="btn" onclick="simFim(false)">↩️ Voltar para eleição em andamento</button>`
+                : `<button class="btn orange" onclick="simFim(true)">🏁 Encerrar eleição e ver a apuração</button>`}
+      <h4>Fase 2 · metas do processo</h4>
+      <div class="simtres"><button class="btn ghost" onclick="simMetas(0)">0%</button><button class="btn ghost" onclick="simMetas(.47)">47%</button><button class="btn ghost" onclick="simMetas(1)">100%</button></div>
+      <button class="btn ghost" onclick="fecharPremio(); ir('fundos')">Ver os fundos do Teams</button>
+      <button class="btn ghost" onclick="fecharPremio(); ir('admin')">Abrir o painel da coordenação</button>
+      <h4>Recomeçar</h4>
+      <button class="btn ghost" style="color:var(--red)" onclick="simLimpar()">Apagar tudo da simulação</button>
+    </div>`;
+  $('#premioModal').classList.add('on');
+}
+function simVotos(qtd, empate=false){
+  const all=LS.get('urna_demo',[]), base=all.length, nums=['101','202','303','404'], pesos=[.22,.3,.33,.15], hj=fmt.format(new Date());
+  const sorteia=()=>{ let r=Math.random(), a=0; for(let i=0;i<4;i++){ a+=pesos[i]; if(r<a) return nums[i]; } return '303'; };
+  if(empate){ const alvo=Math.max(...nums.map(x=>all.filter(v=>v.candidato===x).length))+5;
+    ['202','303'].forEach(c=>{ const conta=all.filter(v=>v.candidato===c).length;
+      for(let i=conta;i<alvo;i++) all.push({chave:'sim-'+all.length, nome:'Simulado '+all.length, candidato:c, turno:1, dia:hj}); }); }
+  for(let i=0;i<qtd;i++){
+    const dia = Math.random()<.6 ? hj : DIAS[Math.floor(Math.random()*DIAS.length)];
+    all.push({chave:'sim-'+(base+i), nome:'Simulado '+(base+i), candidato: Math.random()<.04?'branco':sorteia(), turno:1, dia});
+  }
+  LS.set('urna_demo', all); fecharPremio(); toast(empate?'Empate criado entre NOVA e ELO':`+${qtd} votos simulados`);
+  carregarParticipacao(); if(tela==='apuracao') renderApuracaoTela();
+}
+function simFim(on){ try{ on ? sessionStorage.setItem('sim_fim','1') : sessionStorage.removeItem('sim_fim'); }catch(e){} location.hash = on ? 'apuracao' : 'inicio'; location.reload(); }
+function simMetas(f){ LS.set('urna_metas_demo', METAS_PADRAO.map(m=>({...m, atual:+(m.meta*f).toFixed(1), atualizado_em:new Date().toISOString()}))); fecharPremio(); carregarMetas().then(()=>ir('fundos')); toast(`Metas em ${Math.round(f*100)}%`); }
+function simLimpar(){
+  ['urna_demo','urna_metas_demo','urna_ticket','urna_eleitor','urna_nivel_visto','urna_reacoes'].forEach(k=>{ try{ localStorage.removeItem(k); }catch(e){} });
+  try{ sessionStorage.clear(); }catch(e){}
+  location.hash=''; location.reload();
+}
+
+/* =====================================================================
    INÍCIO DA APLICAÇÃO
    ===================================================================== */
 (async function iniciar(){
-  if(!SB){ const n=$('#demoNote'); n.hidden=false; n.innerHTML='<b>Modo demonstração:</b> os votos ficam salvos só neste navegador. Preencha <code>SUPABASE_URL</code> e <code>SUPABASE_ANON_KEY</code> no início do código para gravar no banco.'; }
+  if(SIM){ $('#simBtn').hidden=false; const n=$('#demoNote'); n.hidden=false; n.innerHTML='<b>🧪 Modo simulação:</b> votos e metas ficam só neste navegador. Nada vai para o banco oficial nem para o WhatsApp. Use o botão roxo para gerar votos, encerrar a eleição e mudar as metas.'; }
+  else if(!SB){ const n=$('#demoNote'); n.hidden=false; n.innerHTML='<b>Modo demonstração:</b> os votos ficam salvos só neste navegador. Preencha <code>SUPABASE_URL</code> e <code>SUPABASE_ANON_KEY</code> no início do código para gravar no banco.'; }
   if(turnoAtual()===2) $('#regra2t').innerHTML=`<b>Segundo turno</b>: ${candsAtivos().map(c=>c.nome+' ('+c.num+')').join(' x ')}.`;
   $$('.dataFim').forEach(e=>e.textContent=dataBR(CONFIG.FIM)); $$('.dataAbre').forEach(e=>e.textContent=dataBR(dataAbre()));
   carregarParticipacao(); setInterval(()=>{ if(['inicio','apuracao','debate'].includes(tela)) carregarParticipacao(); }, 60000);
@@ -2070,6 +2123,7 @@ async function salvarAdmin(){
   if(inicial==='fim') inicial='apuracao';
   if(new URLSearchParams(location.search).has('admin')) inicial='admin';
   else if(location.hash==='#fundos') inicial='fundos';
+  else if(SIM && location.hash==='#apuracao') inicial='apuracao';
   history.replaceState({t:inicial}, '', '#'+inicial);
   ir(inicial, {push:false});
 })();
