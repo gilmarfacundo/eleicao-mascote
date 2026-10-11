@@ -372,6 +372,14 @@ details .jg{margin-top:8px;white-space:pre-line;font-style:italic}
 .admin input{width:100%;padding:11px;border:2px solid var(--line);border-radius:12px;font:inherit;font-size:16px}
 .admin .dois{display:grid;grid-template-columns:1fr 1fr;gap:8px}
 
+.simfaixa{display:flex;align-items:center;gap:8px;background:#7a2cbf;color:#fff;font-size:12px;margin:0 -16px;padding:8px 16px}
+.simfaixa[hidden]{display:none}
+.simfaixa span{flex:1;min-width:0}
+.simfaixa button{background:rgba(255,255,255,.2);color:#fff;font-weight:800;font-size:12px;padding:6px 10px;border-radius:99px;flex:none}
+.simbox{background:#f6efff;border:2px dashed #b48ae0;border-radius:16px;padding:12px;margin-bottom:14px}
+.simbox b{display:block;font-size:13px;color:#5a1f91;margin-bottom:8px}
+.simbox .simtres .btn{background:#7a2cbf;color:#fff;font-size:14px}
+.simbox[hidden]{display:none}
 .simbtn{position:fixed;left:12px;bottom:calc(var(--bar-h) + env(safe-area-inset-bottom) + 12px);z-index:40;background:#7a2cbf;color:#fff;font-weight:800;font-size:13px;padding:9px 14px;border-radius:99px;box-shadow:0 8px 20px rgba(122,44,191,.4)}
 .simgrid{display:grid;gap:8px;margin-top:12px}
 .simgrid .btn{width:100%;font-size:14px}
@@ -401,6 +409,10 @@ footer{text-align:center;color:var(--muted);font-size:12px;padding:18px 16px 8px
     <div class="row">
       <div class="logo">🗳️ Eleições <span>Novação</span></div>
       <div class="chip" id="chip" hidden><b id="chipName"></b><button id="chipTrocar">Trocar</button></div>
+    </div>
+    <div class="simfaixa" id="simFaixa" hidden>
+      <span>🧪 <b>Modo simulação</b> · nada vai para o banco</span>
+      <button onclick="abrirSim()">Controles</button><button onclick="simSair()">Sair</button>
     </div>
     <div class="stepper" id="stepper" hidden>
       <div class="st" data-i="1"><i></i>Título</div>
@@ -584,6 +596,11 @@ footer{text-align:center;color:var(--muted);font-size:12px;padding:18px 16px 8px
       <div class="anel"><svg viewBox="0 0 100 100" width="96" height="96"><circle class="bg" cx="50" cy="50" r="42"/><circle class="fg" id="anelFg" cx="50" cy="50" r="42" stroke-dasharray="264" stroke-dashoffset="264"/></svg><b id="f2Pct">0%</b></div>
       <div><b style="font-size:16px" id="f2Titulo">Metas do processo</b><br><small id="f2Sub">Média dos 4 pilares, cada um limitado a 100%.</small></div>
     </div>
+    <div class="simbox" id="simBoxFundos" hidden>
+      <b>🧪 Simular metas do processo</b>
+      <div class="simtres"><button class="btn" onclick="simMetas(0)">0%</button><button class="btn" onclick="simMetas(.47)">47%</button><button class="btn" onclick="simMetas(1)">100%</button></div>
+      <button class="btn ghost" style="width:100%;margin-top:8px" id="simFimFundos"></button>
+    </div>
     <div class="pilares" id="pilares"></div>
     <div class="fundos" id="fundos"></div>
     <div class="teamsdica">
@@ -748,7 +765,10 @@ const BADGES = [
 /* ---------------- utilidades de data (fuso de Brasília) ---------------- */
 const TZ = 'America/Sao_Paulo';
 const fmt = new Intl.DateTimeFormat('en-CA',{timeZone:TZ,year:'numeric',month:'2-digit',day:'2-digit'});
-const SIM = new URLSearchParams(location.search).has('simular');          // ?simular = teste completo sem tocar no banco
+const SIM = (()=>{                                                          // ?simular = teste completo sem tocar no banco
+  const pediu = new URLSearchParams(location.search).has('simular') || /simular/i.test(location.hash);
+  try{ if(pediu) sessionStorage.setItem('sim_on','1'); return pediu || sessionStorage.getItem('sim_on')==='1'; }catch(e){ return pediu; }
+})();
 const SIM_FIM = SIM && (()=>{ try{ return sessionStorage.getItem('sim_fim')==='1'; }catch(e){ return false; } })();
 const DIA_APOS_FIM = (()=>{ const [y,m,d]=CONFIG.FIM.split('-').map(Number); return new Date(Date.UTC(y,m-1,d+1)).toISOString().slice(0,10); })();
 const hojeISO = () => SIM_FIM ? DIA_APOS_FIM : fmt.format(new Date());
@@ -1957,6 +1977,9 @@ function renderF2Card(){
   $$('[data-f2card]').forEach(el=>el.innerHTML=html);
 }
 function renderFundos(){
+  if(SIM){ $('#simBoxFundos').hidden=false; const b=$('#simFimFundos');
+    b.textContent = SIM_FIM ? '↩️ Voltar para eleição em andamento' : '🏁 Encerrar eleição (para ver o fundo do vencedor)';
+    b.onclick = ()=>{ if(!SIM_FIM && !LS.get('urna_demo',[]).length) simVotos(40); try{ SIM_FIM?sessionStorage.removeItem('sim_fim'):sessionStorage.setItem('sim_fim','1'); }catch(e){} location.hash='fundos'; location.reload(); }; }
   const pct=Math.min(100,F2PCT);
   $('#f2Pct').textContent = Math.floor(pct)+'%';
   $('#anelFg').style.strokeDashoffset = 264*(1-pct/100);
@@ -2142,7 +2165,11 @@ function simVotos(qtd, empate=false){
   carregarParticipacao(); if(tela==='apuracao') renderApuracaoTela();
 }
 function simFim(on){ try{ on ? sessionStorage.setItem('sim_fim','1') : sessionStorage.removeItem('sim_fim'); }catch(e){} location.hash = on ? 'apuracao' : 'inicio'; location.reload(); }
-function simMetas(f){ LS.set('urna_metas_demo', METAS_PADRAO.map(m=>({...m, atual:+(m.meta*f).toFixed(1), atualizado_em:new Date().toISOString()}))); fecharPremio(); carregarMetas().then(()=>ir('fundos')); toast(`Metas em ${Math.round(f*100)}%`); }
+function simMetas(f){ LS.set('urna_metas_demo', METAS_PADRAO.map(m=>({...m, atual:+(m.meta*f).toFixed(1), atualizado_em:new Date().toISOString()}))); fecharPremio(); carregarMetas().then(()=>{ if(tela!=='fundos') ir('fundos'); }); toast(`Metas em ${Math.round(f*100)}%`); }
+function simSair(){
+  try{ sessionStorage.removeItem('sim_on'); sessionStorage.removeItem('sim_fim'); }catch(e){}
+  location.href = location.pathname;
+}
 function simLimpar(){
   ['urna_demo','urna_metas_demo','urna_ticket','urna_eleitor','urna_nivel_visto','urna_reacoes'].forEach(k=>{ try{ localStorage.removeItem(k); }catch(e){} });
   try{ sessionStorage.clear(); }catch(e){}
@@ -2153,7 +2180,7 @@ function simLimpar(){
    INÍCIO DA APLICAÇÃO
    ===================================================================== */
 (async function iniciar(){
-  if(SIM){ $('#simBtn').hidden=false; const n=$('#demoNote'); n.hidden=false; n.innerHTML='<b>🧪 Modo simulação:</b> votos e metas ficam só neste navegador. Nada vai para o banco oficial nem para o WhatsApp. Use o botão roxo para gerar votos, encerrar a eleição e mudar as metas.'; }
+  if(SIM){ $('#simFaixa').hidden=false; const n=$('#demoNote'); n.hidden=false; n.innerHTML='<b>🧪 Modo simulação:</b> votos e metas ficam só neste navegador. Nada vai para o banco oficial nem para o WhatsApp. Use os controles da faixa roxa no topo para gerar votos, encerrar a eleição e mudar as metas.'; }
   else if(!SB){ const n=$('#demoNote'); n.hidden=false; n.innerHTML='<b>Modo demonstração:</b> os votos ficam salvos só neste navegador. Preencha <code>SUPABASE_URL</code> e <code>SUPABASE_ANON_KEY</code> no início do código para gravar no banco.'; }
   if(turnoAtual()===2) $('#regra2t').innerHTML=`<b>Segundo turno</b>: ${candsAtivos().map(c=>c.nome+' ('+c.num+')').join(' x ')}.`;
   $$('.dataFim').forEach(e=>e.textContent=dataBR(CONFIG.FIM)); $$('.dataAbre').forEach(e=>e.textContent=dataBR(dataAbre()));
@@ -2167,10 +2194,12 @@ function simLimpar(){
   let inicial = (eleitor && validado && salva && salva!=='urna') ? salva : 'inicio';
   if(inicial==='fim') inicial='apuracao';
   if(new URLSearchParams(location.search).has('admin')) inicial='admin';
-  else if(location.hash==='#fundos') inicial='fundos';
-  else if(SIM && location.hash==='#apuracao') inicial='apuracao';
+  else if(/^#fundos/.test(location.hash)) inicial='fundos';
+  else if(SIM && /^#apuracao/.test(location.hash)) inicial='apuracao';
   history.replaceState({t:inicial}, '', '#'+inicial);
   ir(inicial, {push:false});
+  try{ history.scrollRestoration='manual'; }catch(e){}
+  setTimeout(()=>window.scrollTo(0,0), 60); window.addEventListener('load',()=>window.scrollTo(0,0));
 })();
 </script>
 </body>
