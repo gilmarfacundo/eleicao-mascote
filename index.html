@@ -409,6 +409,26 @@ footer{text-align:center;color:var(--muted);font-size:12px;padding:18px 16px 8px
 .hero.pixhero{background:linear-gradient(180deg,#5c94fc 0%,#5c94fc 62%,#7bb24d 62%,#7bb24d 66%,#8a5a2b 66%);padding:22px 18px 20px;image-rendering:pixelated}
 .pixhero h1{font-family:"Press Start 2P",monospace;font-size:clamp(18px,5.6vw,28px);line-height:1.35;color:#fff;text-shadow:3px 3px 0 #0b2f7a;margin:12px 0}
 .pixhero h1 span{color:#ffd34d}
+.capa{background:#fff;border-radius:18px;overflow:hidden;margin:0 0 4px;box-shadow:0 6px 0 rgba(11,47,122,.35)}
+.capa img{display:block;width:100%;height:auto}
+.ola{display:flex;justify-content:space-between;align-items:center;gap:10px;background:#fff;border-radius:16px;padding:12px 14px;margin-top:16px;box-shadow:var(--shadow);font-size:14px}
+.ola button{color:var(--blue);font-weight:800;font-size:13px}
+.nomebox{background:#fff;border-radius:22px;padding:18px;box-shadow:var(--shadow)}
+.nomebox input{width:100%;padding:14px;border:2px solid var(--line);border-radius:14px;font:inherit;font-size:17px;margin:8px 0 4px}
+.nomebox .err{min-height:18px}
+.semanas{display:grid;gap:6px;margin-top:8px}
+.semanas .sem{display:grid;grid-template-columns:62px 1fr;gap:8px;align-items:center}
+.semanas .sem small{font-size:10px;font-weight:800;color:var(--muted)}
+.semanas .sem .dd{display:flex;gap:4px;flex-wrap:wrap}
+.semanas .sem .dd span{width:26px;height:26px;border-radius:8px;background:#eef2fb;color:var(--muted);font-size:10px;font-weight:800;display:grid;place-items:center}
+.semanas .sem .dd span.ok{background:var(--green);color:#fff}
+.semanas .sem .dd span.today{outline:2px solid var(--orange)}
+.metabadge{display:inline-block;margin-top:6px;background:#ffd34d;color:#5a3a00;font-size:12px;font-weight:800;padding:4px 10px;border-radius:99px}
+.serie{display:grid;grid-template-columns:1fr auto;gap:4px 10px;background:#fff;border-radius:16px;padding:12px 14px;box-shadow:var(--shadow)}
+.serie b{font-size:14px}.serie .pc{font-family:"Press Start 2P",monospace;font-size:11px;color:var(--navy)}
+.serie .mbar{grid-column:1/-1;position:relative}
+.serie .mbar .esp{position:absolute;top:-3px;bottom:-3px;width:2px;background:var(--navy);opacity:.55}
+.serie small{grid-column:1/-1;color:var(--muted);font-size:12px}
 .pixhero .linha{display:flex;align-items:flex-end;justify-content:center;gap:10px;margin:14px 0 6px;min-height:84px}
 .pixhero .linha img{height:72px;width:auto;image-rendering:pixelated;animation:corre .5s steps(2) infinite}
 .pixhero .linha img:nth-child(2){animation-delay:.12s}.pixhero .linha img:nth-child(3){animation-delay:.25s}.pixhero .linha img:nth-child(4){animation-delay:.37s}
@@ -416,7 +436,7 @@ footer{text-align:center;color:var(--muted);font-size:12px;padding:18px 16px 8px
 .pixhero p{color:#fff;text-shadow:1px 1px 0 #0b2f7a;font-weight:700}
 .hojecard{background:#0b2f7a;color:#fff;border-radius:20px;padding:16px;margin-top:16px;box-shadow:var(--shadow);display:grid;grid-template-columns:58px 1fr;gap:12px;align-items:center}
 .hojecard .num{background:#ffd34d;color:#0b2f7a;border-radius:14px;text-align:center;padding:8px 0;font-family:"Press Start 2P",monospace;font-size:10px;line-height:1.6}
-.hojecard .num b{display:block;font-size:22px}
+.hojecard .num b{display:block;font-size:18px}
 .hojecard h3{font-size:18px;font-weight:900}
 .hojecard p{opacity:.85;font-size:13px}
 .hojecard .ok{display:inline-block;margin-top:6px;background:#2fa84f;color:#fff;font-size:12px;font-weight:800;padding:4px 10px;border-radius:99px}
@@ -501,12 +521,13 @@ body.emjogo main.wrap{max-width:none;padding:0}
   <section class="scr" id="s-inicio">
     <div class="hero pixhero">
       <span class="tag"><i></i><span id="statusTag">Corrida da Novação</span></span>
+      <div class="capa"><img id="capaImg" alt="NOVI, NOVA, ELO e MEIOCA correndo juntos"></div>
       <h1>Corrida da <span>Novação</span></h1>
-      <div class="linha" id="heroLinha"></div>
-      <p>Uma fase nova por dia, de até 1 minuto e meio. Escolha seu mascote e corra!</p>
+      <p>Uma fase nova por dia útil, de até 1 minuto e meio, até a reta final das metas. Escolha seu mascote e corra!</p>
       <div class="count" id="countdown"></div>
     </div>
     <div id="hojeCard"></div>
+    <div class="ola" id="olaBox" hidden></div>
     <div data-f2card></div>
     <div class="missoes" data-missoes></div>
     <div class="card" style="margin-top:16px">
@@ -514,12 +535,24 @@ body.emjogo main.wrap{max-width:none;padding:0}
       <div class="road">
         <div class="r"><span class="n">1</span><div><b>Escolha seu mascote</b><small>Cada um tem um poder especial. A escolha do dia conta para o mascote.</small></div></div>
         <div class="r"><span class="n">2</span><div><b>Corra a fase do dia</b><small>Toque para pular, segure para pular mais alto. Pegue processos para carregar o poder.</small></div></div>
-        <div class="r"><span class="n">3</span><div><b>Uma corrida vale por dia</b><small>A primeira corrida completa do dia conta. Depois, é só treino.</small></div></div>
-        <div class="r last"><span class="n">4</span><div><b>O mais escolhido vence</b><small>O mascote mais escolhido nas corridas vira o mascote oficial, revelado depois de <span class="dataFim"></span>.</small></div></div>
+        <div class="r"><span class="n">3</span><div><b>Uma fase por dia</b><small>Cada celular corre uma vez por dia útil. Cada semana é um mundo, ligado à meta de processos da semana.</small></div></div>
+        <div class="r last"><span class="n">4</span><div><b>O mais escolhido vence</b><small>O mascote mais escolhido nas corridas vira o mascote oficial, revelado depois de <span class="dataFim"></span>, o último prazo das metas.</small></div></div>
       </div>
     </div>
     <button class="btn" style="width:100%;margin-top:16px" onclick="ir('fundos')">🖥️ Fase 2 · Fundos do Teams</button>
     <div class="demo" id="demoNote" hidden></div>
+  </section>
+
+  <!-- NOME -->
+  <section class="scr" id="s-nome">
+    <span class="kicker">Antes da largada</span>
+    <h2>Quem vai correr?</h2>
+    <p class="lead">Seu nome aparece no registro da corrida da coordenação. Ele fica salvo neste celular para os próximos dias.</p>
+    <div class="nomebox">
+      <label for="inNome"><b>Nome e sobrenome</b></label>
+      <input id="inNome" maxlength="60" autocomplete="name" placeholder="Ex.: Maria Souza" enterkeyhint="go">
+      <div class="err" id="nomeErr"></div>
+    </div>
   </section>
 
   <!-- ESCOLHA DO MASCOTE -->
@@ -568,15 +601,11 @@ body.emjogo main.wrap{max-width:none;padding:0}
         <h3>🏃 Sua jornada</h3>
         <div style="display:flex;justify-content:space-between;font-size:14px"><span id="jornadaTxt"></span><b id="jornadaPct"></b></div>
         <div class="prog"><i id="jornadaBar" style="width:0"></i></div>
-        <div class="days" id="daysGrid"></div>
+        <div class="semanas" id="daysGrid"></div>
       </div>
       <div class="card">
         <h3>🏅 Selos</h3>
         <div class="badges" id="badges"></div>
-      </div>
-      <div class="card">
-        <h3>🎮 Treinar fases (não contam)</h3>
-        <div class="treinos" id="treinos"></div>
       </div>
       <div class="missoes" data-missoes></div>
     </div>
@@ -609,15 +638,16 @@ body.emjogo main.wrap{max-width:none;padding:0}
   <section class="scr" id="s-fundos">
     <span class="kicker">Fase 2 · Metas do processo</span>
     <h2>Fundos do Teams</h2>
-    <p class="lead">A cada 20% das metas do processo cumpridas, a equipe libera um novo fundo para as reuniões. Em 100%, libera o fundo com o <b>mascote oficial</b>.</p>
+    <p class="lead">A coordenação libera um novo fundo para as reuniões conforme as metas do processo avançam. O primeiro já está liberado. Os fundos dos mascotes saem do <b>menos escolhido</b> para o <b>mais escolhido</b>: o último é o do <b>mascote oficial</b>.</p>
     <svg width="0" height="0" style="position:absolute"><defs><linearGradient id="gradAnel"><stop offset="0" stop-color="#1d4fd6"/><stop offset="1" stop-color="#f47a1f"/></linearGradient></defs></svg>
     <div class="f2geral">
       <div class="anel"><svg viewBox="0 0 100 100" width="96" height="96"><circle class="bg" cx="50" cy="50" r="42"/><circle class="fg" id="anelFg" cx="50" cy="50" r="42" stroke-dasharray="264" stroke-dashoffset="264"/></svg><b id="f2Pct">0%</b></div>
-      <div><b style="font-size:16px" id="f2Titulo">Metas do processo</b><br><small id="f2Sub">Média dos 4 pilares, cada um limitado a 100%.</small></div>
+      <div><b style="font-size:16px" id="f2Titulo">Metas do processo</b><br><small id="f2Sub">Realizado acumulado sobre a projeção total, média das frentes.</small></div>
     </div>
     <div class="simbox" id="simBoxFundos" hidden>
-      <b>🧪 Simular metas do processo</b>
+      <b>🧪 Simular metas e liberação</b>
       <div class="simtres"><button class="btn" onclick="simMetas(0)">0%</button><button class="btn" onclick="simMetas(.47)">47%</button><button class="btn" onclick="simMetas(1)">100%</button></div>
+      <button class="btn" style="width:100%;margin-top:8px" onclick="simLiberar()">🔓 Liberar próximo fundo (como a coordenação)</button>
       <button class="btn ghost" style="width:100%;margin-top:8px" id="simFimFundos"></button>
     </div>
     <div class="pilares" id="pilares"></div>
@@ -633,17 +663,7 @@ body.emjogo main.wrap{max-width:none;padding:0}
     <p class="note" id="f2Atualizado"></p>
   </section>
 
-  <!-- PAINEL DA COORDENAÇÃO (?admin) -->
-  <section class="scr admin" id="s-admin">
-    <span class="kicker">Painel da coordenação</span>
-    <h2>Lançar metas do processo</h2>
-    <p class="lead">Atualize o realizado de cada pilar. O progresso e os fundos liberados mudam na hora para toda a equipe.</p>
-    <div id="adminLinhas"></div>
-    <div class="linha"><label for="adminPin">PIN da coordenação</label><input id="adminPin" type="password" autocomplete="off" placeholder="NOV-XXXX-XXXX"></div>
-    <div class="err" id="adminErr"></div>
-  </section>
-
-  <footer>Ação interna de engajamento da Coordenação de Novação do FCVS · CECVS-SP<br>Participação voluntária e anônima: o jogo não pede nome nem guarda dados pessoais — só o mascote escolhido, a fase e a pontuação, ligados a um código aleatório do aparelho.</footer>
+  <footer>Ação interna de engajamento da Coordenação de Novação do FCVS · CECVS-SP<br>Participação voluntária. O jogo registra o nome informado, o mascote escolhido, a fase e a pontuação. O placar dos mascotes fica fechado até o fim.</footer>
 </main>
 
 <nav class="actionbar" aria-label="Navegação">
@@ -668,10 +688,21 @@ body.emjogo main.wrap{max-width:none;padding:0}
 const CONFIG = {
   SUPABASE_URL: 'https://sbshifwwsludgfsvwkgx.supabase.co',
   SUPABASE_ANON_KEY: 'sb_publishable_etMxmM-yvktVXLT_hRhOEA_WyLGND0_',
-  INICIO: '2026-10-13',          // primeiro dia (fase 1)
-  FIM:    '2026-10-23',          // último dia (fase 9) — o resultado abre no dia seguinte
-                                 // (se mudar, ajuste também a data em apuracao_corrida() no banco)
-  SO_DIAS_UTEIS: true,
+  // Uma semana = um mundo. Datas e meta de processos por dia seguem o cronograma das metas.
+  // metaDia = projeção da semana ÷ dias úteis (número de processos que a fase pede para pegar).
+  SEMANAS: [
+    { ini:'2026-10-13', fim:'2026-10-16', metaDia:28 },
+    { ini:'2026-10-19', fim:'2026-10-23', metaDia:21 },
+    { ini:'2026-10-26', fim:'2026-10-30', metaDia:21 },
+    { ini:'2026-11-03', fim:'2026-11-06', metaDia:30 },
+    { ini:'2026-11-09', fim:'2026-11-13', metaDia:24 },
+    { ini:'2026-11-16', fim:'2026-11-19', metaDia:29 },
+    { ini:'2026-11-23', fim:'2026-11-27', metaDia:23 },
+    { ini:'2026-11-30', fim:'2026-12-04', metaDia:10 },
+    { ini:'2026-12-07', fim:'2026-12-11', metaDia:10 },
+  ],
+  FERIADOS: ['2026-11-02','2026-11-20'],
+  // (se mudar o fim, ajuste também a data em apuracao_corrida() no banco)
   EQUIPE: 30,                    // pessoas na equipe (calibra as missões)
   PREMIO: 'A equipe será reconhecida no comunicado interno da Coordenação',
 };
@@ -701,8 +732,8 @@ const turnoAtual = () => 1;
 
 const BADGES = [
   { id:'b1',  ic:'🏁', nome:'Largada',        req:(d)=>d>=1 },
-  { id:'b3',  ic:'🔥', nome:'Embalado',       req:(d)=>d>=3 },
-  { id:'b5',  ic:'🏃', nome:'Maratonista',    req:(d)=>d>=5 },
+  { id:'b5',  ic:'🔥', nome:'Embalado',       req:(d)=>d>=5 },
+  { id:'b21', ic:'🏃', nome:'Maratonista',    req:(d,t)=>d>=Math.ceil(t/2) },
   { id:'all', ic:'👑', nome:'Lenda da pista', req:(d,t)=>t>0 && d>=t },
 ];
 
@@ -817,8 +848,9 @@ function pixCanvas(def, escala=1){
 /* ---------- gerador determinístico (mesma fase para todos no dia) ---------- */
 function mulberry32(a){ return function(){ a|=0; a=a+0x6D2B79F5|0; let t=Math.imul(a^a>>>15,1|a); t=t+Math.imul(t^t>>>7,61|t)^t; return ((t^t>>>14)>>>0)/4294967296; }; }
 
-function gerarFase(n){
-  const F=FASES[n-1], rnd=mulberry32(1000+n*7919);
+function gerarFase(p, mundo, dia=1){
+  // p = número da fase no calendário (semente), mundo = semana (1..9), dia = dia da semana (1..5)
+  const n=mundo, F=FASES[mundo-1], rnd=mulberry32(1000+p*7919), dens=F.dens*(1+.035*(dia-1));
   const L=Math.round(7300*F.vel), obs=[], moedas=[], buracos=[], plats=[];
   const pesos=Object.entries(F.padroes), soma=pesos.reduce((a,p)=>a+p[1],0);
   const escolhe=()=>{ let r=rnd()*soma; for(const [k,w] of pesos){ if((r-=w)<0) return k; } return pesos[0][0]; };
@@ -851,7 +883,7 @@ function gerarFase(n){
       for(let i=0;i<q;i++){ obs.push({x:x+i*34, t:'relogio', fase:rnd()*6.28}); moedas.push({x:x+i*34+2, y:CHAO-14}); }
       larg=q*34;
     }
-    x += larg + Math.round((80+rnd()*95)/F.dens);
+    x += larg + Math.round((80+rnd()*95)/dens);
   }
   return {L, obs, moedas, buracos, plats};
 }
@@ -861,7 +893,8 @@ function gerarFase(n){
    ===================================================================== */
 function criarJogo(canvas, op){
   const ctx=canvas.getContext('2d'); canvas.width=JG_W; canvas.height=JG_H; ctx.imageSmoothingEnabled=false;
-  const F=FASES[op.fase-1], NIVEL=gerarFase(op.fase), L=NIVEL.L;
+  const MUNDO=op.mundo||Math.min(9,op.fase), DIA=op.dia||1, META=op.meta||0;
+  const F=FASES[MUNDO-1], NIVEL=gerarFase(op.fase, MUNDO, DIA), L=NIVEL.L;
   const IDS=['novi','nova','elo','meioca'], meu=op.mascote;
   const SPR=op.sprites;                                   // {id: HTMLImageElement}
   const IT={}; for(const k in PIX) IT[k]=pixCanvas(PIX[k]);
@@ -973,7 +1006,7 @@ function criarJogo(canvas, op){
       // processos
       const cj=caixaJogador();
       for(const m of moedasVivas){ if(m.ok || m.x<J.x-20 || m.x>J.x+40) continue;
-        if(toca(cj,{x:m.x,y:m.y,w:12,h:11})){ m.ok=true; J.moedas++; if(J.ativo<=0) J.poder=Math.min(META_PODER,J.poder+1); som('moeda'); brilho(m.x+6,m.y+5,'#ffd34d',5); } }
+        if(toca(cj,{x:m.x,y:m.y,w:12,h:11})){ m.ok=true; J.moedas++; if(META && J.moedas===META){ som('poder'); brilho(J.x+12,J.y-30,'#2fa84f',16); } if(J.ativo<=0) J.poder=Math.min(META_PODER,J.poder+1); som('moeda'); brilho(m.x+6,m.y+5,'#ffd34d',5); } }
       // chegada
       if(J.x>=L){ J.fim=tempoTotal; som('chegada'); confeteChegada(); }
     } else { J.x+=VBASE*.5*dt; J.anim+=dt*4; }
@@ -1008,15 +1041,16 @@ function criarJogo(canvas, op){
   }
   function hud(){
     return { estado, cont:Math.ceil(cont), tempo:tempoTotal, moedas:J.moedas, poder:J.poder, meta:META_PODER, ativo:Math.max(0,J.ativo), durPoder:PODERES[meu].dur,
-             pos:posicao(), progresso:[{id:meu,p:Math.min(1,J.x/L)}, ...RIV.map(r=>({id:r.id,p:Math.min(1,r.x/L)}))], limite:LIMITE };
+             metaFase:META, pos:posicao(), progresso:[{id:meu,p:Math.min(1,J.x/L)}, ...RIV.map(r=>({id:r.id,p:Math.min(1,r.x/L)}))], limite:LIMITE };
   }
   let terminou=false;
   function terminar(esgotou=false){
     if(terminou) return; terminou=true; estado='fim';
     const pos=posicao(), tempo = J.fim || tempoTotal;
-    const pontos = J.moedas*10 + [300,200,120,60][pos-1] + Math.max(0, Math.round((LIMITE-tempo)*4)) - J.tropecos*5;
+    const bateuMeta = META>0 && J.moedas>=META;
+    const pontos = J.moedas*10 + [300,200,120,60][pos-1] + Math.max(0, Math.round((LIMITE-tempo)*4)) - J.tropecos*5 + (bateuMeta?150:0);
     setTimeout(()=>op.onFim && op.onFim({ fase:op.fase, mascote:meu, posicao:pos, tempo:Math.round(tempo*1000), processos:J.moedas, tropecos:J.tropecos,
-      pontos:Math.max(0,pontos), completou:!!J.fim, esgotou, total:NIVEL.moedas.length }), 600);
+      pontos:Math.max(0,pontos), completou:!!J.fim, esgotou, total:NIVEL.moedas.length, meta:META, bateuMeta, mundo:MUNDO, dia:DIA }), 600);
   }
   function confeteChegada(){ const cores=['#f47a1f','#ffd34d','#1d4fd6','#2fa84f','#ffffff']; for(let i=0;i<40;i++) particulas.push({x:J.x+10+rnd()*40,y:CHAO-60-rnd()*40,vx:-40+rnd()*80,vy:-80-rnd()*60,v:1.2,cor:cores[i%5],s:2}); }
 
@@ -1118,7 +1152,7 @@ function criarJogo(canvas, op){
       ctx.fillStyle='#f47a1f'; ctx.fillRect(ax-3,ay,7,2); ctx.fillRect(ax-2,ay+2,5,1); ctx.fillRect(ax-1,ay+3,3,1); ctx.fillRect(ax,ay+4,1,1); }
     for(const p of particulas){ ctx.fillStyle=p.cor; ctx.fillRect((p.x-cam)|0, p.y|0, p.s, p.s); }
     if(estado==='contagem'){ ctx.fillStyle='rgba(11,47,122,.55)'; ctx.fillRect(0,0,JG_W,JG_H);
-      ctx.fillStyle='#fff'; ctx.textAlign='center'; ctx.font='8px "Press Start 2P", monospace'; ctx.fillText(`FASE ${F.n} · ${F.nome.toUpperCase()}`, JG_W/2, 70);
+      ctx.fillStyle='#fff'; ctx.textAlign='center'; ctx.font='8px "Press Start 2P", monospace'; ctx.fillText(`MUNDO ${MUNDO}-${DIA} · ${F.nome.toUpperCase()}`, JG_W/2, 62); if(META){ ctx.fillStyle='#ffd34d'; ctx.fillText(`META: ${META} PROCESSOS`, JG_W/2, 82); }
       ctx.fillStyle='#ffd34d'; ctx.font='32px "Press Start 2P", monospace'; ctx.fillText(Math.ceil(cont)>0?String(Math.ceil(cont)):'JÁ!', JG_W/2, 130);
       ctx.fillStyle='#fff'; ctx.font='8px "Press Start 2P", monospace'; ctx.fillText('TOQUE PARA PULAR', JG_W/2, 170); ctx.textAlign='left'; }
     }
@@ -1154,13 +1188,19 @@ const SIM = (()=>{
 })();
 const SIM_FIM = SIM && (()=>{ try{ return sessionStorage.getItem('sim_fim')==='1'; }catch(e){ return false; } })();
 const SIM_FASE = SIM ? +((()=>{ try{ return sessionStorage.getItem('sim_fase'); }catch(e){ return 0; } })()||0) : 0;
+CONFIG.INICIO = CONFIG.SEMANAS[0].ini; CONFIG.FIM = CONFIG.SEMANAS[CONFIG.SEMANAS.length-1].fim;
 const DIA_APOS_FIM = (()=>{ const [y,m,d]=CONFIG.FIM.split('-').map(Number); return new Date(Date.UTC(y,m-1,d+1)).toISOString().slice(0,10); })();
 const parseISO = s => { const [y,m,d]=s.split('-').map(Number); return new Date(Date.UTC(y,m-1,d)); };
 const isoOf = dt => dt.toISOString().slice(0,10);
 const isUtil = s => { const w=parseISO(s).getUTCDay(); return w!==0 && w!==6; };
-function diasDeJogo(){ const out=[]; let d=parseISO(CONFIG.INICIO); const f=parseISO(CONFIG.FIM);
-  while(d<=f){ const s=isoOf(d); if(!CONFIG.SO_DIAS_UTEIS||isUtil(s)) out.push(s); d=new Date(d.getTime()+864e5); } return out; }
-const DIAS = diasDeJogo();
+// calendário: cada dia útil das semanas vira uma fase { p, data, mundo, dia, meta }
+const CAL = (()=>{ const out=[];
+  CONFIG.SEMANAS.forEach((S,i)=>{ let d=parseISO(S.ini), k=0; const f=parseISO(S.fim);
+    while(d<=f){ const s=isoOf(d); if(isUtil(s) && !CONFIG.FERIADOS.includes(s)) out.push({p:out.length+1, data:s, mundo:i+1, dia:++k, meta:S.metaDia}); d=new Date(d.getTime()+864e5); } });
+  return out; })();
+const DIAS = CAL.map(c=>c.data);
+const infoFase = p => CAL[Math.max(0,Math.min(CAL.length-1,p-1))];
+const rotFase = p => { const c=infoFase(p); return `${c.mundo}-${c.dia}`; };
 const hojeISO = () => SIM_FIM ? DIA_APOS_FIM : (SIM && SIM_FASE ? DIAS[SIM_FASE-1] : fmt.format(new Date()));
 const TESTE = new URLSearchParams(location.search).has('teste') || (SIM && !SIM_FIM);
 function estado(){
@@ -1169,7 +1209,7 @@ function estado(){
   if(TESTE){ const i=DIAS.indexOf(h); return {aberta:true, idx:Math.max(0,i), h, fase:Math.max(0,i)+1}; }
   if(h<CONFIG.INICIO) return {aberta:false, motivo:'antes', h, fase:1};
   const idx=DIAS.indexOf(h);
-  if(idx<0) return {aberta:false, motivo:'fimdesemana', h, fase:Math.max(1,DIAS.filter(d=>d<h).length)};
+  if(idx<0) return {aberta:false, motivo:'fimdesemana', h, fase:Math.max(1,DIAS.filter(d=>d<h).length), prox:DIAS.find(d=>d>h)};
   return {aberta:true, idx, h, fase:idx+1};
 }
 const dataBR = s => { const [y,m,d]=s.split('-'); return `${d}/${m}`; };
@@ -1180,6 +1220,7 @@ const LS = {
   get(k,def){ try{ const v=localStorage.getItem(k); return v?JSON.parse(v):def; }catch(e){ return def; } },
   set(k,v){ try{ localStorage.setItem(k,JSON.stringify(v)); }catch(e){} }
 };
+const NOME = () => (LS.get('corrida_nome','')||'').trim();
 const SS = { get(k){ try{ return sessionStorage.getItem(k); }catch(e){ return null; } }, set(k,v){ try{ sessionStorage.setItem(k,v); }catch(e){} }, del(k){ try{ sessionStorage.removeItem(k); }catch(e){} } };
 
 /* código anônimo do aparelho (não identifica ninguém) */
@@ -1195,11 +1236,11 @@ const SB = (!SIM && CONFIG.SUPABASE_URL && CONFIG.SUPABASE_ANON_KEY && window.su
   ? window.supabase.createClient(CONFIG.SUPABASE_URL, CONFIG.SUPABASE_ANON_KEY) : null;
 const API = {
   async registrar(r){
-    if(SB){ const {data,error}=await SB.rpc('registrar_corrida',{p_aparelho:APARELHO,p_mascote:r.mascote,p_fase:r.fase,p_pontos:r.pontos,p_tempo_ms:r.tempo,p_posicao:r.posicao,p_processos:r.processos}); if(error) throw error; return data; }
+    if(SB){ const {data,error}=await SB.rpc('registrar_corrida',{p_aparelho:APARELHO,p_mascote:r.mascote,p_fase:r.fase,p_pontos:r.pontos,p_tempo_ms:r.tempo,p_posicao:r.posicao,p_processos:r.processos,p_nome:NOME()}); if(error) throw error; return data; }
     if(!SIM) throw new Error('sem conexão com o banco');
     const all=LS.get('corrida_demo',[]), h=hojeISO();
     if(all.some(v=>v.ap===APARELHO && v.dia===h)) return {ok:true, valida:false, dias:all.filter(v=>v.ap===APARELHO).length};
-    all.push({ap:APARELHO, mascote:r.mascote, fase:r.fase, dia:h, pontos:r.pontos}); LS.set('corrida_demo',all);
+    all.push({ap:APARELHO, nome:NOME(), mascote:r.mascote, fase:r.fase, dia:h, pontos:r.pontos}); LS.set('corrida_demo',all);
     return {ok:true, valida:true, dias:all.filter(v=>v.ap===APARELHO).length};
   },
   async situacao(){
@@ -1215,13 +1256,12 @@ const API = {
     return CANDS.map(c=>{ const l=all.filter(v=>v.mascote===c.id); return {mascote:c.id, escolhas:l.length, hoje:0, pontos:l.reduce((a,v)=>a+v.pontos,0), aparelhos:aps}; }).filter(r=>r.escolhas>0);
   },
   async metas(){
-    if(SB){ const {data,error}=await SB.rpc('progresso_metas'); if(error) throw error; return data||[]; }
-    return LS.get('urna_metas_demo', METAS_PADRAO);
+    if(SB){ const {data,error}=await SB.rpc('metas_progresso'); if(error) throw error; return data||[]; }
+    return LS.get('corrida_metas_demo', METAS_PADRAO);
   },
-  async salvarMetas(pin, dados){
-    if(SB){ const {data,error}=await SB.rpc('atualizar_metas',{p_pin:pin, p_dados:dados}); if(error) throw error; return data; }
-    const atual=LS.get('urna_metas_demo', METAS_PADRAO).map(m=>{ const d=dados.find(x=>x.pilar===m.pilar)||{}; return {...m, ...d, atualizado_em:new Date().toISOString()}; });
-    LS.set('urna_metas_demo', atual); return {ok:true};
+  async fundos(){
+    if(SB){ const {data,error}=await SB.rpc('fundos_status'); if(error) throw error; return data||[]; }
+    return LS.get('corrida_fundos_demo', [{ordem:1, fundo:'equipe'}]);
   },
 };
 
@@ -1245,7 +1285,8 @@ const spritesProntos = Promise.all(Object.entries(SPRITE_SRC).map(([k,src])=>new
 /* =====================================================================
    ESTADO
    ===================================================================== */
-let tela='inicio', SIT={jogou_hoje:false, dias:0, melhor:0}, ULTIMO=null, JOGO=null, treino=false, faseJogo=1, mascoteJogo=null;
+let tela='inicio', SIT={jogou_hoje:false, dias:0, melhor:0}, ULTIMO=null, JOGO=null, faseJogo=1, mascoteJogo=null;
+const podeCorrer = () => { const st=estado(); return st.aberta && !SIT.jogou_hoje; };
 const HIST = () => LS.get('corrida_hist', {});           // histórico só deste aparelho
 function salvarHist(dia, r){ const h=HIST(); h[dia]=r; LS.set('corrida_hist', h); }
 
@@ -1263,7 +1304,7 @@ function ir(t, {push=true}={}){
   if(t==='resultado')renderResultado();
   if(t==='apuracao') renderApuracaoTela();
   if(t==='fundos')   carregarMetas();
-  if(t==='admin')    renderAdmin();
+  if(t==='nome')     renderNome();
   configurarBarra(t);
   window.scrollTo(0,0);
   if(push && t!=='jogo') history.pushState({t}, '', '#'+t);
@@ -1275,15 +1316,14 @@ function configurarBarra(t){
   let voltar=null, label=null, acao=null, cor='';
   if(t==='inicio'){
     if(st.motivo==='depois'){ label='Ver o mascote oficial 🏆'; acao=()=>ir('apuracao'); cor='orange'; }
-    else if(st.aberta && !SIT.jogou_hoje){ label=`Jogar a fase ${st.fase} 🏁`; acao=()=>{ treino=false; ir('escolha'); }; cor='orange'; }
+    else if(st.aberta && !SIT.jogou_hoje){ label=`Jogar a fase ${rotFase(st.fase)} 🏁`; acao=()=>ir(NOME()?'escolha':'nome'); cor='orange'; }
     else if(st.aberta && SIT.jogou_hoje){ label='Ver meu resultado de hoje'; acao=()=>ir('resultado'); }
-    else if(st.motivo==='antes'){ label='Treinar a fase 1'; acao=()=>{ treino=true; faseJogo=1; ir('escolha'); }; }
-    else { label='Pista fechada hoje · treinar'; acao=()=>{ treino=true; faseJogo=st.fase; ir('escolha'); }; }
+    else { label='Conhecer os mascotes'; acao=()=>ir('escolha'); }
   }
   if(t==='escolha'){ voltar='inicio'; }
+  if(t==='nome'){ voltar='inicio'; label='Continuar ›'; acao=salvarNome; cor='orange'; }
   if(t==='resultado'){ label='Voltar ao início'; acao=()=>ir('inicio'); cor='ghost'; }
   if(t==='apuracao'||t==='fundos'){ label='Voltar ao início'; acao=()=>ir('inicio'); cor='ghost'; }
-  if(t==='admin'){ voltar='fundos'; label='Salvar metas'; acao=salvarAdmin; cor='orange'; }
   back.hidden=!voltar; back.onclick=()=>ir(voltar);
   cta.hidden=!label; cta.textContent=label||''; cta.onclick=acao; cta.className='btn cta'+(cor?' '+cor:'');
   hint.hidden=true;
@@ -1293,13 +1333,14 @@ function configurarBarra(t){
    INÍCIO
    ===================================================================== */
 function renderInicio(){
-  const st=estado(), F=FASES[st.fase-1];
-  $('#heroLinha').innerHTML = ['elo','meioca','novi','nova'].map(k=>`<img src="${SPRITE_SRC[k]}" alt="">`).join('');
+  const st=estado(), C=infoFase(st.fase), F=FASES[C.mundo-1];
+  $('#capaImg').src = IMG.grupo;
+  const ola=$('#olaBox'); ola.hidden=!NOME(); if(NOME()) ola.innerHTML=`<span>👋 Olá, <b>${esc(NOME())}</b></span><button onclick="ir('nome')">Não é você?</button>`;
   let html='';
   if(st.motivo==='depois') html=`<div class="hojecard"><div class="num">FIM<b>🏆</b></div><div><h3>A corrida terminou!</h3><p>Veja qual mascote foi o mais escolhido.</p></div></div>`;
-  else if(st.motivo==='antes') html=`<div class="hojecard"><div class="num">FASE<b>1</b></div><div><h3>Largada em ${dataBR(CONFIG.INICIO)}</h3><p>Enquanto isso, dá para treinar a fase 1.</p></div></div>`;
-  else if(st.motivo==='fimdesemana') html=`<div class="hojecard"><div class="num">FIM DE<b>☕</b></div><div><h3>Pista fechada no fim de semana</h3><p>A próxima fase abre no próximo dia útil. Dá para treinar as fases anteriores.</p></div></div>`;
-  else html=`<div class="hojecard"><div class="num">FASE<b>${F.n}</b></div><div><h3>${F.nome}</h3><p>${F.sub} · ${st.fase} de ${DIAS.length}</p>${SIT.jogou_hoje?'<span class="ok">✓ Você já correu hoje</span>':''}</div></div>`;
+  else if(st.motivo==='antes') html=`<div class="hojecard"><div class="num">FASE<b>1</b></div><div><h3>Largada em ${dataBR(CONFIG.INICIO)}</h3><p>Enquanto isso, conheça os mascotes e ouça os hinos.</p></div></div>`;
+  else if(st.motivo==='fimdesemana') html=`<div class="hojecard"><div class="num">FIM DE<b>☕</b></div><div><h3>Pista fechada hoje</h3><p>${st.prox?`A fase ${rotFase(DIAS.indexOf(st.prox)+1)} abre em ${dataBR(st.prox)}.`:'A próxima fase abre no próximo dia útil.'}</p></div></div>`;
+  else html=`<div class="hojecard"><div class="num">MUNDO<b>${C.mundo}-${C.dia}</b></div><div><h3>${F.nome}</h3><p>${F.sub} · fase ${st.fase} de ${DIAS.length}</p><span class="metabadge">🎯 Meta do dia: ${C.meta} processos</span> ${SIT.jogou_hoje?'<span class="ok">✓ Você já correu hoje</span>':''}</div></div>`;
   $('#hojeCard').innerHTML=html;
   renderMissoes(); renderF2Card();
 }
@@ -1307,21 +1348,33 @@ function countdown(){
   const st=estado(), box=$('#countdown'); let alvo, rot;
   if(st.motivo==='antes'){ alvo=CONFIG.INICIO; rot='para a largada'; $('#statusTag').textContent='Largada em '+dataBR(CONFIG.INICIO); }
   else if(st.motivo==='depois'){ box.innerHTML=''; $('#statusTag').textContent='Corrida encerrada'; return; }
-  else { alvo=DIA_APOS_FIM; rot='para o fim da corrida'; $('#statusTag').textContent = st.motivo==='fimdesemana' ? 'Pista fechada hoje' : `Fase ${st.fase} aberta`; }
+  else { alvo=DIA_APOS_FIM; rot='para o fim da corrida'; $('#statusTag').textContent = st.motivo==='fimdesemana' ? 'Pista fechada hoje' : `Fase ${rotFase(st.fase)} aberta`; }
   const s=Math.max(0,Math.floor((new Date(alvo+'T00:00:00-03:00')-new Date())/1000));
   const p=[[Math.floor(s/86400),'dias'],[Math.floor(s%86400/3600),'horas'],[Math.floor(s%3600/60),'min'],[s%60,'seg']];
   box.innerHTML = p.map(([n,l])=>`<div><b>${String(n).padStart(2,'0')}</b><small>${l}</small></div>`).join('') + `<div class="lbl">${rot}</div>`;
 }
 
 /* =====================================================================
+   NOME DE QUEM JOGA
+   ===================================================================== */
+function renderNome(){ $('#inNome').value=NOME(); $('#nomeErr').textContent=''; setTimeout(()=>$('#inNome').focus(),150); }
+function salvarNome(){
+  const n=$('#inNome').value.replace(/\s+/g,' ').trim();
+  if(n.length<3 || !/[a-zA-ZÀ-ÿ]/.test(n)) return $('#nomeErr').textContent='Digite seu nome e sobrenome.';
+  LS.set('corrida_nome', n.slice(0,60)); toast(`Boa corrida, ${n.split(' ')[0]}! 🏁`);
+  ir(podeCorrer() ? 'escolha' : 'inicio');
+}
+document.addEventListener('keydown',e=>{ if(tela==='nome' && e.key==='Enter') salvarNome(); });
+
+/* =====================================================================
    ESCOLHA DO MASCOTE (com hino)
    ===================================================================== */
 function renderEscolha(){
   const st=estado();
-  if(!treino) faseJogo=st.fase;
-  const F=FASES[faseJogo-1];
-  $('#escKicker').textContent = (treino?'Treino · ':'Fase do dia · ') + `Fase ${F.n}: ${F.nome}`;
-  $('#escLead').textContent = treino ? 'Treino não conta para o resultado. Escolha com quem quer correr.' : 'Cada mascote tem um poder. A sua corrida válida de hoje soma uma escolha para ele.';
+  faseJogo=st.fase; const C=infoFase(faseJogo), F=FASES[C.mundo-1], pode=podeCorrer();
+  $('#escKicker').textContent = pode ? `Fase do dia · Mundo ${C.mundo}-${C.dia}: ${F.nome}` : 'Os mascotes';
+  $('#escLead').textContent = pode ? `Cada mascote tem um poder. Sua corrida de hoje soma uma escolha para ele. Meta da fase: ${C.meta} processos.`
+    : SIT.jogou_hoje ? 'Você já correu hoje. Volte no próximo dia útil para a nova fase. Enquanto isso, ouça os hinos.' : 'A pista não está aberta agora. Conheça os poderes e ouça os hinos.';
   const ult = LS.get('corrida_ultimo_mascote', null);
   $('#escolhas').innerHTML = CANDS.map(c=>`
     <article class="esc ${ult===c.id?'sel':''}">
@@ -1332,7 +1385,7 @@ function renderEscolha(){
       <div class="tx">
         <div class="poderbox"><span class="ic">${ICONE_PODER[c.id]}</span><div><b>Poder: ${PODERES[c.id].nome}</b><small>${PODERES[c.id].desc}</small></div></div>
         ${playerHTML(c)}
-        <button class="btn orange correr" onclick="comecar('${c.id}')">Correr com ${c.nome} ›</button>
+        ${pode?`<button class="btn orange correr" onclick="comecar('${c.id}')">Correr com ${c.nome} ›</button>`:''}
       </div>
     </article>`).join('');
 }
@@ -1405,8 +1458,8 @@ let AC_SFX=null;
 async function comecar(id){
   pararHino();
   mascoteJogo=id; LS.set('corrida_ultimo_mascote', id);
-  const st=estado();
-  if(!treino && (!st.aberta || SIT.jogou_hoje)) treino=true;
+  if(!podeCorrer()) return ir('inicio');
+  if(!NOME()) return ir('nome');
   // áudio precisa ser liberado dentro do toque
   try{ AC_SFX = AC_SFX || new (window.AudioContext||window.webkitAudioContext)(); if(AC_SFX.state==='suspended') AC_SFX.resume(); }catch(e){}
   if(AUDIO_EL){ AUDIO_EL.src=urlMp3(id); AUDIO_EL.loop=true; AUDIO_EL.playbackRate=1; AUDIO_EL.volume=.6; AUDIO_EL.currentTime=0; const p=AUDIO_EL.play(); if(p&&p.catch) p.catch(()=>{}); }
@@ -1414,7 +1467,8 @@ async function comecar(id){
   await spritesProntos; try{ await document.fonts.load('8px "Press Start 2P"'); }catch(e){}
   montarPista();
   JOGO && JOGO.destruir();
-  JOGO = criarJogo($('#tela'), { fase:faseJogo, mascote:id, sprites:SPRITES, audioCtx:AC_SFX,
+  const C=infoFase(faseJogo);
+  JOGO = criarJogo($('#tela'), { fase:faseJogo, mundo:C.mundo, dia:C.dia, meta:C.meta, mascote:id, sprites:SPRITES, audioCtx:AC_SFX,
     onHud:atualizarHud, onFim:fimDaCorrida });
   JOGO.iniciar();
 }
@@ -1426,7 +1480,7 @@ let ultHud=0;
 function atualizarHud(h){
   const agora=performance.now(); if(agora-ultHud<60 && h.estado==='corrida') return; ultHud=agora;
   const s=Math.floor(h.tempo); $('#hTempo').textContent=`${Math.floor(s/60)}:${String(s%60).padStart(2,'0')}`;
-  $('#hMoedas').textContent=h.moedas; $('#hPos').textContent=h.pos+'º';
+  $('#hMoedas').textContent=h.metaFase ? `${h.moedas}/${h.metaFase}${h.moedas>=h.metaFase?' ✓':''}` : h.moedas; $('#hPos').textContent=h.pos+'º';
   h.progresso.forEach(p=>{ const im=document.querySelector(`#pista img[data-id="${p.id}"]`); if(im) im.style.left=(p.p*96)+'%'; });
   const b=$('#btnPoder'), carga=$('#cargaPoder');
   if(h.ativo>0){ b.className='btn-poder usando'; carga.style.height=(h.ativo/h.durPoder*100)+'%'; $('#txtPoder').innerHTML=`${ICONE_PODER[mascoteJogo]}<br>ATIVO`; }
@@ -1450,18 +1504,18 @@ function atualizarHud(h){
 function sairDoJogo(){
   if(!JOGO) return ir('inicio');
   JOGO.pausar(true);
-  if(confirm(treino ? 'Sair do treino?' : 'Sair agora? Esta corrida não vai contar e você pode correr de novo depois.')){
+  if(confirm('Sair agora? Esta corrida não vai contar. Você pode começar de novo hoje, mas só a primeira corrida completa é registrada.')){
     JOGO.destruir(); JOGO=null; try{ AUDIO_EL.pause(); AUDIO_EL.loop=false; }catch(e){} ir('inicio');
   } else JOGO.pausar(false);
 }
 async function fimDaCorrida(r){
   try{ AUDIO_EL.loop=false; let v=AUDIO_EL.volume; const f=setInterval(()=>{ v=Math.max(0,v-.08); AUDIO_EL.volume=v; if(v<=0){ clearInterval(f); AUDIO_EL.pause(); } },80); }catch(e){}
-  ULTIMO={...r, treino, valida:false, dia:hojeISO()};
-  const st=estado();
-  if(!treino && st.aberta && !SIT.jogou_hoje){
+  ULTIMO={...r, valida:false, dia:hojeISO()};
+  if(podeCorrer()){
     try{
       const res=await API.registrar(r);
-      if(res && res.ok){ ULTIMO.valida=!!res.valida; SIT={...SIT, jogou_hoje:true, dias:res.dias}; if(res.valida) salvarHist(hojeISO(), {fase:r.fase, mascote:r.mascote, pontos:r.pontos, posicao:r.posicao}); }
+      if(res && res.ok===false && res.erro==='nome'){ ULTIMO.erro='nome'; }
+      else if(res && res.ok){ ULTIMO.valida=!!res.valida; SIT={...SIT, jogou_hoje:true, dias:res.dias}; if(res.valida) salvarHist(hojeISO(), {fase:r.fase, mascote:r.mascote, pontos:r.pontos, posicao:r.posicao, processos:r.processos, meta:r.meta, bateuMeta:r.bateuMeta}); }
       else { ULTIMO.erro = res && res.erro || 'erro'; }
     }catch(e){ console.error(e); ULTIMO.erro='conexao'; }
   }
@@ -1476,39 +1530,36 @@ async function fimDaCorrida(r){
 function renderResultado(){
   const st=estado(), hist=HIST(), hoje=hist[hojeISO()];
   let r=ULTIMO;
-  if(!r && hoje) r={...hoje, valida:true, treino:false, tempo:null, processos:null, tropecos:null};
+  if(!r && hoje) r={...hoje, valida:true, tempo:null, tropecos:null};
   if(!r){ $('#rMedalha').textContent='SEM CORRIDA'; $('#rSub').textContent='Você ainda não correu hoje.'; $('#rImg').src=SPRITE_SRC.novi; }
   else {
     const c=CANDS.find(x=>x.id===r.mascote);
     $('#rMedalha').textContent = r.posicao===1 ? '1º LUGAR!' : `${r.posicao}º LUGAR`;
     $('#rImg').src=SPRITE_SRC[r.mascote];
-    $('#rSub').textContent = `${c.nome} · Fase ${r.fase}: ${FASES[r.fase-1].nome}` + (r.esgotou?' · tempo esgotado':'');
+    const C=infoFase(r.fase);
+    $('#rSub').textContent = `${c.nome} · Mundo ${C.mundo}-${C.dia}: ${FASES[C.mundo-1].nome}` + (r.esgotou?' · tempo esgotado':'') + (r.meta ? (r.bateuMeta?` · 🎯 meta de ${r.meta} batida!`:` · meta: ${r.meta} processos`) : '');
   }
   $('#rPontos').textContent = r ? r.pontos : '—';
-  $('#rProc').textContent = r && r.processos!=null ? `${r.processos}` : '—';
+  $('#rProc').textContent = r && r.processos!=null ? `${r.processos}${r.meta?'/'+r.meta:''}` : '—';
   $('#rTempo').textContent = r && r.tempo ? `${Math.round(r.tempo/1000)}s` : '—';
   $('#rTrop').textContent = r && r.tropecos!=null ? r.tropecos : '—';
   const v=$('#rValidade');
-  if(r && r.valida){ v.className='validade ok'; v.innerHTML=`✅ Corrida válida! Sua escolha de hoje (<b>${CANDS.find(x=>x.id===r.mascote).nome}</b>) foi registrada, sem identificação.`; }
+  if(r && r.valida){ v.className='validade ok'; v.innerHTML=`✅ Corrida válida! Sua escolha de hoje (<b>${CANDS.find(x=>x.id===r.mascote).nome}</b>) foi registrada.`; }
   else if(r && r.erro){ v.className='validade treino'; v.textContent = r.erro==='conexao' ? 'Não foi possível registrar agora (sem conexão). Tente correr de novo mais tarde.' : 'Não foi possível registrar esta corrida.'; }
-  else if(r){ v.className='validade treino'; v.textContent = SIT.jogou_hoje ? 'Treino: sua corrida válida de hoje já foi registrada. Esta não conta.' : 'Treino: esta corrida não conta para o resultado.'; }
+  else if(r){ v.className='validade treino'; v.textContent = 'Sua corrida de hoje já estava registrada. Volte no próximo dia útil.'; }
   else v.className='validade treino', v.textContent='Corra a fase de hoje para registrar sua escolha.';
   const prox = DIAS.find(d=>d>hojeISO());
   $('#rAmanha').innerHTML = prox && st.motivo!=='depois'
-    ? `<div><small>Próxima fase · ${dataBR(prox)}</small><br><b>FASE ${DIAS.indexOf(prox)+1} · ${FASES[DIAS.indexOf(prox)].nome.toUpperCase()}</b></div><div style="font-size:26px">🏁</div>`
+    ? `<div><small>Próxima fase · ${dataBR(prox)}</small><br><b>MUNDO ${rotFase(DIAS.indexOf(prox)+1)} · ${FASES[infoFase(DIAS.indexOf(prox)+1).mundo-1].nome.toUpperCase()}</b></div><div style="font-size:26px">🏁</div>`
     : `<div><b>ÚLTIMA FASE!</b><br><small>O mascote oficial é revelado em ${dataBR(dataAbre())}.</small></div><div style="font-size:26px">🏆</div>`;
   // jornada
   const tot=DIAS.length, dias=Math.max(SIT.dias||0, Object.keys(hist).length), h=hojeISO();
   $('#jornadaTxt').textContent=`${dias} de ${tot} fases corridas`; $('#jornadaPct').textContent=Math.round(Math.min(dias,tot)/tot*100)+'%';
   $('#jornadaBar').style.width=(Math.min(dias,tot)/tot*100)+'%';
-  $('#daysGrid').innerHTML = DIAS.map((d,i)=>`<span class="${hist[d]?'ok':''} ${d===h?'today':''}" title="Fase ${i+1} · ${dataBR(d)}">${i+1}</span>`).join('');
+  $('#daysGrid').innerHTML = CONFIG.SEMANAS.map((S,i)=>`<div class="sem"><small>MUNDO ${i+1}<br>${dataBR(S.ini)}</small><div class="dd">${CAL.filter(c=>c.mundo===i+1).map(c=>`<span class="${hist[c.data]?'ok':''} ${c.data===h?'today':''}" title="${dataBR(c.data)}">${c.mundo}-${c.dia}</span>`).join('')}</div></div>`).join('');
   $('#badges').innerHTML = BADGES.map(b=>`<div class="badge ${b.req(dias,tot)?'on':''}"><div class="ic">${b.ic}</div>${b.nome}</div>`).join('');
-  // treinos
-  const lib = SIM ? 9 : Math.max(1, st.fase);
-  $('#treinos').innerHTML = FASES.map(F=>`<button ${F.n>lib?'disabled':''} onclick="treinar(${F.n})">F${F.n}</button>`).join('');
   renderMissoes();
 }
-function treinar(n){ treino=true; faseJogo=n; ir('escolha'); }
 
 /* =====================================================================
    APURAÇÃO
@@ -1534,7 +1585,7 @@ async function renderApuracaoTela(){
   $('#res').innerHTML = lista.map((x,i)=>`<div class="bar ${i===0&&x.n>0?'lead':''}"><img src="${SPRITE_SRC[x.c.id]}" alt="" style="image-rendering:pixelated;object-fit:contain"><div>
     <div class="top2">${i===0&&x.n>0?'🏆 ':''}${x.c.nome} <span>${(total?x.n/total*100:0).toFixed(1).replace('.',',')}%</span></div>
     <div class="tr"><i style="width:${max?x.n/max*100:0}%"></i></div><small>${x.n} escolha${x.n===1?'':'s'}</small></div></div>`).join('');
-  $('#apNote').textContent='Cada aparelho conta uma escolha por dia, sem identificação.';
+  $('#apNote').textContent='Cada celular conta uma escolha por dia útil.';
 }
 
 /* =====================================================================
@@ -1573,7 +1624,7 @@ function renderMissoes(){
       return `<div class="nivel ${on?'on':''} ${nx?'next':''}"><span class="ic">${n.ic}</span>
         <div class="tx"><b>${n.etapa}</b><small>${on?`Liberado: ${n.nome}`:`${metaNivel(n)} corridas · destrava ${n.nome}`}</small></div>
         ${on?`<button class="st" onclick="abrirPremio('${n.id}')">Abrir</button>`:'<span class="st">🔒</span>'}</div>`; }).join('')}</div>
-    ${hojeISO()<=CONFIG.FIM ? `<button class="btn share" onclick="chamarColegas()">📲 Convidar colegas</button><p class="note" style="text-align:center">Participação voluntária e anônima.</p>` : ''}`;
+    ${hojeISO()<=CONFIG.FIM ? `<button class="btn share" onclick="chamarColegas()">📲 Convidar colegas</button><p class="note" style="text-align:center">Participação voluntária.</p>` : ''}`;
   $$('[data-missoes]').forEach(el=>el.innerHTML=html);
   $$('.jingle .remix').forEach(b=>b.hidden=!nivelLiberado('remix'));
   const atual=NIVEIS.filter(n=>PART.total>=metaNivel(n)).length, visto=+(LS.get('corrida_nivel_visto',0)||0);
@@ -1581,17 +1632,17 @@ function renderMissoes(){
 }
 function chamarColegas(){
   const url=location.href.split('#')[0].split('?')[0], prox=NIVEIS.find(n=>PART.total<metaNivel(n)), st=estado();
-  const txt=`🏁 Corrida da Novação: hoje é a fase ${st.fase} (${FASES[st.fase-1].nome}). ${prox?`Faltam ${metaNivel(prox)-PART.total} corridas para a equipe chegar à etapa "${prox.etapa}".`:'A equipe já concluiu todas as etapas!'} Jogue se quiser: ${url}`;
+  const txt=`🏁 Corrida da Novação: hoje é a fase ${rotFase(st.fase)} (${FASES[infoFase(st.fase).mundo-1].nome}). ${prox?`Faltam ${metaNivel(prox)-PART.total} corridas para a equipe chegar à etapa "${prox.etapa}".`:'A equipe já concluiu todas as etapas!'} Jogue se quiser: ${url}`;
   if(navigator.share) navigator.share({title:'Corrida da Novação', text:txt}).catch(()=>{}); else window.open('https://wa.me/?text='+encodeURIComponent(txt),'_blank');
 }
 function abrirPremio(id){
   const n=NIVEIS.find(x=>x.id===id); if(!nivelLiberado(id) && !SIM) return; let corpo='';
   if(id==='curiosidades') corpo=`<div class="curi">${CANDS.map(c=>`<div><img src="${SPRITE_SRC[c.id]}" alt="" style="image-rendering:pixelated"><div><b>${c.nome}</b><br>${CURIOSIDADES[c.id]}</div></div>`).join('')}</div>`;
-  if(id==='remix') corpo=`<p class="lead" style="margin-top:8px">O botão <b>⚡ Remix</b> apareceu nos hinos, na tela de escolha do mascote.</p><button class="btn" style="width:100%" onclick="fecharPremio(); treino=true; ir('escolha')">Ver os hinos</button>`;
+  if(id==='remix') corpo=`<p class="lead" style="margin-top:8px">O botão <b>⚡ Remix</b> apareceu nos hinos, na tela de escolha do mascote.</p><button class="btn" style="width:100%" onclick="fecharPremio(); ir('escolha')">Ver os hinos</button>`;
   if(id==='wallpapers') corpo=`<p class="lead" style="margin-top:8px">Toque no mascote para baixar o papel de parede.</p><div class="walls">${CANDS.map(c=>`<button onclick="baixarWallpaper('${c.id}')"><img src="${IMG[c.id]}" alt="">${c.nome}</button>`).join('')}</div>`;
   if(id==='premio') corpo=`<div class="premio">🏁 ${esc(CONFIG.PREMIO)}</div><p class="lead" style="margin-top:10px;text-align:center">Conquista coletiva da equipe. Obrigado a todos que correram!</p>`;
-  if(id==='certificado') corpo=`<p class="lead" style="margin-top:8px">Digite como quer que seu nome apareça. Ele é usado só para gerar a imagem e não é guardado.</p>
-    <input id="certNome" maxlength="60" placeholder="Seu nome" style="width:100%;padding:14px;border:2px solid var(--line);border-radius:14px;font:inherit;font-size:16px;margin:8px 0">
+  if(id==='certificado') corpo=`<p class="lead" style="margin-top:8px">Confira como seu nome vai aparecer no certificado.</p>
+    <input id="certNome" maxlength="60" placeholder="Seu nome" value="${esc(NOME())}" style="width:100%;padding:14px;border:2px solid var(--line);border-radius:14px;font:inherit;font-size:16px;margin:8px 0">
     <button class="btn orange" style="width:100%" onclick="baixarCertificado()">Baixar certificado</button>`;
   $('#premioBody').innerHTML=`<h3>${n.ic} ${n.nome}</h3><p class="lead" style="margin:0">Etapa “${n.etapa}” · ${n.desc}</p>${corpo}`;
   $('#premioModal').classList.add('on');
@@ -1629,93 +1680,77 @@ async function baixarCertificado(){
 }
 
 /* =====================================================================
-   FASE 2 — FUNDOS DO TEAMS liberados pelas metas do processo
+   FASE 2 — FUNDOS DO TEAMS (liberados pela coordenação)
+   - o 1º fundo (Equipe Novação) já começa liberado
+   - os fundos dos mascotes saem do menos escolhido para o mais escolhido;
+     o último é o do mascote oficial
+   - as metas aparecem só em percentual (os números ficam no banco)
    ===================================================================== */
 const METAS_PADRAO = [
-  {pilar:'produtividade', descricao:'Processos concluídos no período',   atual:0, meta:100},
-  {pilar:'pendencias',    descricao:'Processos antigos regularizados',   atual:0, meta:50},
-  {pilar:'integracao',    descricao:'Processos concluídos no prazo (%)', atual:0, meta:95},
-  {pilar:'qualidade',     descricao:'Análises sem retrabalho (%)',       atual:0, meta:98},
+  { serie:'vaf3vaf4', nome:'VAF3/VAF4 · instrução para auditoria', ordem:1, pct:0, esperado:0 },
+  { serie:'interno',  nome:'Interno VAF1/VAF2',                    ordem:2, pct:0, esperado:0 },
+  { serie:'vaf1vaf2', nome:'VAF1/VAF2',                            ordem:3, pct:0, esperado:0 },
 ];
-const PILAR_MASCOTE = {produtividade:'novi', pendencias:'nova', integracao:'elo', qualidade:'meioca'};
-const FUNDOS = [
-  { pct:20,  id:'marca',    nome:'Azul Novação',        desc:'As cores da Coordenação' },
-  { pct:40,  id:'equipe',   nome:'Equipe em movimento', desc:'Os quatro mascotes juntos' },
-  { pct:60,  id:'painel',   nome:'Painel de metas',     desc:'Indicadores ao fundo' },
-  { pct:80,  id:'reta',     nome:'Reta final',          desc:'A caminho dos 100%' },
-  { pct:100, id:'vencedor', nome:'Mascote oficial',     desc:'O campeão da corrida' },
-];
-let METAS = METAS_PADRAO.map(m=>({...m})), F2PCT = 0;
-const pctPilar = m => Math.max(0, Math.min(100, (+m.atual||0) / Math.max(+m.meta||0, 0.0001) * 100));
-const fmtNum = n => (+n).toLocaleString('pt-BR',{maximumFractionDigits:1});
+const ICONE_SERIE = { vaf3vaf4:'🔎', interno:'📂', vaf1vaf2:'✅' };
+const TOTAL_FUNDOS = 5;
+let METAS = METAS_PADRAO.map(m=>({...m})), F2PCT = 0, FUNDOS_LIB = [{ordem:1, fundo:'equipe'}];
+const fmtPct = n => (Math.round((+n||0)*10)/10).toLocaleString('pt-BR',{maximumFractionDigits:1}) + '%';
 
 async function carregarMetas(){
-  try{ const r=await API.metas(); if(r && r.length) METAS=r; }catch(e){ console.error(e); }
-  F2PCT = METAS.reduce((a,m)=>a+pctPilar(m),0) / METAS.length;
-  if(hojeISO()>CONFIG.FIM && VENC===undefined) VENC = await descobrirVencedor();
+  try{ const r=await API.metas(); if(r && r.length) METAS=r.slice().sort((a,b)=>a.ordem-b.ordem); }catch(e){ console.error(e); }
+  try{ const f=await API.fundos(); if(f && f.length) FUNDOS_LIB=f.slice().sort((a,b)=>a.ordem-b.ordem); }catch(e){ console.error(e); }
+  F2PCT = METAS.length ? METAS.reduce((a,m)=>a+Math.min(100,+m.pct||0),0)/METAS.length : 0;
   renderF2Card(); if(tela==='fundos') renderFundos();
-}
-async function descobrirVencedor(){
-  try{
-    const rows=(await API.apuracao()).filter(r=>r.mascote!=='_total');
-    const v=CANDS.map(c=>({c, n:+(rows.find(r=>r.mascote===c.id)?.escolhas||0)})).sort((a,b)=>b.n-a.n);
-    if(!v[0] || !v[0].n) return null;
-    if(v[1] && v[1].n===v[0].n) return 'empate';
-    return v[0].c;
-  }catch(e){ console.error(e); return null; }
+  const vistos=+(LS.get('corrida_fundos_vistos',1)||1);
+  if(FUNDOS_LIB.length>vistos){ LS.set('corrida_fundos_vistos',FUNDOS_LIB.length); if(tela==='inicio'||tela==='fundos'){ confete(); toast('🔓 Novo fundo do Teams liberado!'); } }
 }
 function renderF2Card(){
-  const prox = FUNDOS.find(f=>F2PCT < f.pct);
+  const n=FUNDOS_LIB.length;
   const html = `<button class="f2card" onclick="ir('fundos')">
     <div class="k">FASE 2 · METAS DO PROCESSO</div>
     <h3>🖥️ Fundos do Teams</h3>
-    <p>${prox ? `Equipe em <b>${Math.floor(F2PCT)}%</b> das metas. Próximo fundo em ${prox.pct}%: <b>${prox.nome}</b>.` : '<b>100% das metas!</b> Todos os fundos liberados.'}</p>
+    <p><b>${n} de ${TOTAL_FUNDOS}</b> fundos liberados. Metas do processo em <b>${fmtPct(F2PCT)}</b>. ${n<TOTAL_FUNDOS?'A coordenação libera o próximo conforme a equipe avança.':'Todos liberados!'}</p>
     <div class="mbar"><i style="width:${Math.min(100,F2PCT)}%"></i></div>
     <span class="go">Ver fundos →</span>
   </button>`;
   $$('[data-f2card]').forEach(el=>el.innerHTML=html);
 }
+function slotFundo(ordem){
+  const lib=FUNDOS_LIB.find(f=>+f.ordem===ordem);
+  if(ordem===1) return { ordem, id:'equipe', ok:true, nome:'Equipe Novação', desc:'Os quatro mascotes juntos' };
+  if(lib){ const c=CANDS.find(x=>x.id===lib.fundo);
+    return { ordem, id:lib.fundo, ok:true, nome: ordem===TOTAL_FUNDOS ? `${c.nome} · mascote oficial` : `${c.nome} · ${c.partido}`,
+      desc: ordem===TOTAL_FUNDOS ? 'O mais escolhido da corrida' : `Liberado em ${lib.liberado_em?new Intl.DateTimeFormat('pt-BR',{timeZone:TZ,day:'2-digit',month:'2-digit'}).format(new Date(lib.liberado_em)):'—'}` }; }
+  return { ordem, id:null, ok:false, nome: ordem===TOTAL_FUNDOS ? 'Mascote oficial' : `Fundo ${ordem}`,
+    desc: ordem===TOTAL_FUNDOS ? 'O mais escolhido: sai por último' : 'Mascote menos escolhido até a liberação' };
+}
 function renderFundos(){
   if(SIM){ $('#simBoxFundos').hidden=false; const b=$('#simFimFundos');
-    b.textContent = SIM_FIM ? '↩️ Voltar para corrida em andamento' : '🏁 Encerrar corrida (para ver o fundo do campeão)';
+    b.textContent = SIM_FIM ? '↩️ Voltar para corrida em andamento' : '🏁 Encerrar corrida (ver o resultado)';
     b.onclick = ()=>{ if(!SIM_FIM && !LS.get('corrida_demo',[]).length) simCorridas(40); try{ SIM_FIM?sessionStorage.removeItem('sim_fim'):sessionStorage.setItem('sim_fim','1'); }catch(e){} location.hash='fundos'; location.reload(); }; }
-  const pct=Math.min(100,F2PCT);
+  const pct=Math.min(100,F2PCT), n=FUNDOS_LIB.length;
   $('#f2Pct').textContent = Math.floor(pct)+'%';
   $('#anelFg').style.strokeDashoffset = 264*(1-pct/100);
-  const liberados = FUNDOS.filter(f=>pct>=f.pct).length;
-  $('#f2Titulo').textContent = liberados ? `${liberados} de ${FUNDOS.length} fundos liberados` : 'Nenhum fundo liberado ainda';
-  $('#pilares').innerHTML = METAS.map(m=>{
-    const c=CANDS.find(x=>x.id===PILAR_MASCOTE[m.pilar]), p=pctPilar(m);
-    return `<div class="pil"><img src="${IMG[c.id]}" alt=""><div>
-      <div class="top2">${esc(c.pilar)}<span>${Math.floor(p)}%</span></div>
-      <div class="mbar"><i style="width:${p}%"></i></div>
-      <small>${esc(m.descricao)}: ${fmtNum(m.atual)} de ${fmtNum(m.meta)}</small></div></div>`;
-  }).join('');
-  $('#fundos').innerHTML = FUNDOS.map(f=>{
-    const ok = pct>=f.pct, eleicaoFim = hojeISO()>CONFIG.FIM;
-    let sub = ok ? f.desc : `Libera com ${f.pct}% das metas`, botao = ok ? `<button class="btn" onclick="baixarFundo('${f.id}')">Baixar fundo</button>` : '';
-    if(f.id==='vencedor' && ok && !eleicaoFim){ sub=`Meta batida! Aparece após a apuração (${dataBR(dataAbre())})`; botao=''; }
-    if(f.id==='vencedor' && ok && eleicaoFim && !VENC){ sub='Aguardando o resultado da corrida'; botao=''; }
-    if(f.id==='vencedor' && ok && VENC==='empate'){ sub='Empate na corrida: a coordenação define o desempate'; botao=''; }
-    const prevOk = ok && !(f.id==='vencedor' && (!eleicaoFim || !VENC || VENC==='empate'));
-    return `<div class="fundo ${prevOk?'':'lock'}">
-      <div class="pv"><div class="prev" data-prev="${f.id}"></div><span class="selo">${f.pct}%</span>${prevOk?'':'<div class="cad">🔒</div>'}</div>
-      <div class="tx"><div><b>${f.nome}</b><small>${sub}</small></div>${botao}</div>
-    </div>`;
-  }).join('');
-  // miniaturas (as trancadas ficam borradas; o vencedor só aparece depois da apuração)
-  FUNDOS.forEach(async f=>{
-    const el=document.querySelector(`[data-prev="${f.id}"]`); if(!el) return;
-    if(f.id==='vencedor' && !(VENC && VENC!=='empate')) { el.style.backgroundImage='linear-gradient(135deg,#0b2f7a,#f47a1f)'; return; }
-    try{ el.style.backgroundImage=`url(${await miniatura(f.id)})`; }catch(e){}
-  });
+  $('#f2Titulo').textContent = `${n} de ${TOTAL_FUNDOS} fundos liberados`;
+  $('#pilares').innerHTML = METAS.map(m=>{ const p=Math.min(100,+m.pct||0), e=Math.min(100,+m.esperado||0), ritmo = e>0 ? (p>=e?'✅ no ritmo da projeção':'⏳ abaixo do ritmo da projeção') : 'Projeção começa nas próximas semanas';
+    return `<div class="serie"><b>${ICONE_SERIE[m.serie]||'📊'} ${esc(m.nome)}</b><span class="pc">${fmtPct(p)}</span>
+      <div class="mbar"><i style="width:${p}%"></i>${e>0?`<span class="esp" style="left:${e}%" title="Esperado até hoje"></span>`:''}</div>
+      <small>${ritmo}${e>0?` · esperado até hoje: ${fmtPct(e)}`:''}</small></div>`; }).join('');
+  const slots=[...Array(TOTAL_FUNDOS)].map((_,i)=>slotFundo(i+1));
+  $('#fundos').innerHTML = slots.map(f=>`<div class="fundo ${f.ok?'':'lock'}">
+      <div class="pv"><div class="prev" data-prev="${f.ordem}"></div><span class="selo">${f.ordem}º</span>${f.ok?'':'<div class="cad">🔒</div>'}</div>
+      <div class="tx"><div><b>${esc(f.nome)}</b><small>${esc(f.desc)}</small></div>${f.ok?`<button class="btn" onclick="baixarFundo(${f.ordem})">Baixar fundo</button>`:''}</div>
+    </div>`).join('');
+  slots.forEach(async f=>{ const el=document.querySelector(`[data-prev="${f.ordem}"]`); if(!el) return;
+    if(!f.ok){ el.style.backgroundImage = f.ordem===TOTAL_FUNDOS ? 'linear-gradient(135deg,#0b2f7a,#f47a1f)' : 'linear-gradient(135deg,#1d4fd6,#7fa2ff)'; return; }
+    try{ el.style.backgroundImage=`url(${await miniatura(f.id, f.ordem)})`; }catch(e){} });
   const ult = METAS.map(m=>m.atualizado_em).filter(Boolean).sort().pop();
   $('#f2Atualizado').textContent = ult ? 'Metas atualizadas em ' + new Intl.DateTimeFormat('pt-BR',{timeZone:TZ,dateStyle:'short',timeStyle:'short'}).format(new Date(ult)) + '.' : '';
 }
 
 /* desenho dos fundos (1920×1080, espaço livre no centro para o rosto) */
 const MINI = {}, RECORTES = {};
-function holofote(ctx, cx, cy, rx, ry, cor='rgba(236,243,255,.95)'){   // luz no chão sob o mascote
+function holofote(ctx, cx, cy, rx, ry, cor='rgba(236,243,255,.95)'){
   ctx.save(); ctx.translate(cx,cy); ctx.scale(1, ry/rx);
   const g=ctx.createRadialGradient(0,0,0,0,0,rx); g.addColorStop(0,cor); g.addColorStop(.55,cor.replace(/[\d.]+\)$/,'.55)')); g.addColorStop(1,'rgba(236,243,255,0)');
   ctx.fillStyle=g; ctx.beginPath(); ctx.arc(0,0,rx,0,7); ctx.fill(); ctx.restore();
@@ -1729,29 +1764,20 @@ async function recortado(src){
   for(let i=0;i<W;i++){ fila.push(i, (H-1)*W+i); } for(let j=0;j<H;j++){ fila.push(j*W, j*W+W-1); }
   while(fila.length){ const i=fila.pop(); if(vis[i] || !claro(i)) continue; vis[i]=1; px[i*4+3]=0;
     const cx=i%W, cy=(i/W)|0; if(cx>0) fila.push(i-1); if(cx<W-1) fila.push(i+1); if(cy>0) fila.push(i-W); if(cy<H-1) fila.push(i+W); }
-  // borda suave: pixels vizinhos ao recorte ficam semitransparentes
   for(let i=0;i<W*H;i++){ if(vis[i]) continue; const cx=i%W, cy=(i/W)|0;
     if((cx>0&&vis[i-1])||(cx<W-1&&vis[i+1])||(cy>0&&vis[i-W])||(cy<H-1&&vis[i+W])) px[i*4+3]=150; }
   x.putImageData(d,0,0);
-  // esfuma a base (onde a foto original foi cortada) para a sombra do chão sumir aos poucos
   x.globalCompositeOperation='destination-in';
   const gf=x.createLinearGradient(0,H*.86,0,H); gf.addColorStop(0,'rgba(0,0,0,1)'); gf.addColorStop(1,'rgba(0,0,0,0)');
   x.fillStyle=gf; x.fillRect(0,0,W,H); x.globalCompositeOperation='source-over';
   return RECORTES[src]=c;
 }
-async function desenharFundo(id){
+async function desenharFundo(id, ordem){
   const W=1920, H=1080, cv=document.createElement('canvas'); cv.width=W; cv.height=H; const ctx=cv.getContext('2d');
   const grad=(a,b)=>{ const g=ctx.createLinearGradient(0,0,W,H); g.addColorStop(0,a); g.addColorStop(1,b); return g; };
   const txt=(t,x,y,font,cor,al='left')=>{ ctx.font=font; ctx.fillStyle=cor; ctx.textAlign=al; ctx.fillText(t,x,y); };
   const rodape=()=>{ ctx.fillStyle='rgba(255,255,255,.85)'; ctx.fillRect(0,H-64,W,64); txt('Coordenação de Novação do FCVS · CECVS-SP',60,H-22,'700 28px Archivo, sans-serif','#0b2f7a'); txt('NOVAÇÃO',W-60,H-22,'900 30px Archivo, sans-serif','#f47a1f','right'); };
-  if(id==='marca'){
-    ctx.fillStyle=grad('#0b2f7a','#1d4fd6'); ctx.fillRect(0,0,W,H);
-    ctx.strokeStyle='rgba(255,255,255,.06)'; ctx.lineWidth=40; for(let x=-H;x<W;x+=140){ ctx.beginPath(); ctx.moveTo(x,H); ctx.lineTo(x+H,0); ctx.stroke(); }
-    ctx.fillStyle='#f47a1f'; ctx.fillRect(60,120,180,12);
-    txt('NOVAÇÃO',60,250,'900 120px Archivo, sans-serif','rgba(255,255,255,.95)');
-    txt('Nossa evolução em resultados',62,310,'700 40px Archivo, sans-serif','#ffa24d');
-    rodape();
-  } else if(id==='equipe'){
+  if(id==='equipe'){
     ctx.fillStyle=grad('#eaf0ff','#ffffff'); ctx.fillRect(0,0,W,H);
     ctx.fillStyle='rgba(29,79,214,.08)'; for(let i=0;i<10;i++){ ctx.beginPath(); ctx.arc(200+i*190, 200+(i%3)*260, 90+(i%4)*30, 0, 7); ctx.fill(); }
     const img=await recortado(IMG.grupo); const w=1050, hh=img.height*w/img.width;
@@ -1760,75 +1786,32 @@ async function desenharFundo(id){
     txt('Equipe Novação',60,170,'900 92px Archivo, sans-serif','#0b2f7a');
     txt('Juntos em cada meta',62,235,'700 42px Archivo, sans-serif','#f47a1f');
     rodape();
-  } else if(id==='painel'){
-    ctx.fillStyle=grad('#0a1a45','#16295e'); ctx.fillRect(0,0,W,H);
-    ctx.strokeStyle='rgba(255,255,255,.07)'; ctx.lineWidth=2; for(let y=120;y<H-64;y+=90){ ctx.beginPath(); ctx.moveTo(0,y); ctx.lineTo(W,y); ctx.stroke(); }
-    const barras=[220,300,260,380,340,460,420,560,520,660];
-    barras.forEach((bh,i)=>{ const x=W-1000+i*95; ctx.fillStyle= i===barras.length-1 ? '#f47a1f' : `rgba(59,108,240,${.35+i*.05})`; ctx.fillRect(x,H-64-bh,64,bh); });
-    ctx.strokeStyle='#7fe3ff'; ctx.lineWidth=8; ctx.beginPath(); barras.forEach((bh,i)=>{ const x=W-1000+i*95+32, y=H-64-bh-40; i?ctx.lineTo(x,y):ctx.moveTo(x,y); }); ctx.stroke();
-    txt('Metas em evolução',60,170,'900 88px Archivo, sans-serif','#ffffff');
-    txt('Produtividade · Pendências · Prazos · Qualidade',62,230,'700 36px Archivo, sans-serif','#ffa24d');
-    rodape();
-  } else if(id==='reta'){
-    ctx.fillStyle=grad('#1d4fd6','#0b2f7a'); ctx.fillRect(0,0,W,H);
-    const cores=['#f47a1f','#ffa24d','#ffffff','#7fe3ff','#4fd18b'];
-    for(let i=0;i<260;i++){ const borda=Math.random()<.5; const x= borda ? (Math.random()<.5? Math.random()*420 : W-Math.random()*420) : Math.random()*W; const y= borda ? Math.random()*H : (Math.random()<.5? Math.random()*160 : H-64-Math.random()*160);
-      if(x<1150 && y<320) continue;
-      ctx.save(); ctx.translate(x,y); ctx.rotate(Math.random()*6); ctx.fillStyle=cores[i%5]; ctx.fillRect(-9,-4,18,8); ctx.restore(); }
-    txt('Reta final',60,190,'900 110px Archivo, sans-serif','#ffffff');
-    txt('80% das metas cumpridas pela equipe',62,255,'700 40px Archivo, sans-serif','#ffa24d');
-    rodape();
-  } else if(id==='vencedor'){
-    const c=VENC; ctx.fillStyle=grad('#0b2f7a','#1d4fd6'); ctx.fillRect(0,0,W,H);
+  } else {
+    const c=CANDS.find(x=>x.id===id), oficial = ordem===TOTAL_FUNDOS;
+    ctx.fillStyle=grad('#0b2f7a','#1d4fd6'); ctx.fillRect(0,0,W,H);
     const rg=ctx.createRadialGradient(W-480,H/2,40,W-480,H/2,560); rg.addColorStop(0,'rgba(255,162,77,.55)'); rg.addColorStop(1,'rgba(255,162,77,0)'); ctx.fillStyle=rg; ctx.fillRect(0,0,W,H);
     const img=await recortado(IMG[c.id]); const hh=880, w=img.width*hh/img.height, y0=(H-64-hh)/2+10;
     holofote(ctx, W-480, y0+hh-hh*.06, w*.8, hh*.11);
     ctx.drawImage(img, W-480-w/2, y0, w, hh);
-    txt('MASCOTE OFICIAL',60,150,'900 44px Archivo, sans-serif','#ffa24d');
+    txt(oficial?'MASCOTE OFICIAL':c.partido.toUpperCase(),60,150,'900 44px Archivo, sans-serif','#ffa24d');
     txt(c.nome,56,290,'900 150px Archivo, sans-serif','#ffffff');
     txt(c.slogan,62,355,'700 40px Archivo, sans-serif','#ffffff');
-    txt('100% das metas · Coordenação de Novação',62,410,'600 30px Archivo, sans-serif','rgba(255,255,255,.75)');
+    txt(oficial?'O mais escolhido da Corrida da Novação':'Corrida da Novação · Coordenação de Novação',62,410,'600 30px Archivo, sans-serif','rgba(255,255,255,.75)');
     rodape();
   }
   return cv;
 }
-async function miniatura(id){
-  if(MINI[id]) return MINI[id];
-  const cv=await desenharFundo(id), m=document.createElement('canvas'); m.width=480; m.height=270;
-  m.getContext('2d').drawImage(cv,0,0,480,270); return MINI[id]=m.toDataURL('image/jpeg',.8);
+async function miniatura(id, ordem){
+  const k=id+'_'+ordem; if(MINI[k]) return MINI[k];
+  const cv=await desenharFundo(id, ordem), m=document.createElement('canvas'); m.width=480; m.height=270;
+  m.getContext('2d').drawImage(cv,0,0,480,270); return MINI[k]=m.toDataURL('image/jpeg',.8);
 }
-async function baixarFundo(id){
-  const f=FUNDOS.find(x=>x.id===id); if(Math.min(100,F2PCT) < f.pct) return;
-  if(id==='vencedor' && !(VENC && VENC!=='empate')) return;
-  const cv=await desenharFundo(id);
-  baixarCanvas(cv, `fundo-teams-${id}.jpg`, 'image/jpeg', .9);
+async function baixarFundo(ordem){
+  const f=slotFundo(ordem); if(!f.ok) return;
+  const cv=await desenharFundo(f.id, ordem);
+  baixarCanvas(cv, `fundo-teams-${f.id}.jpg`, 'image/jpeg', .9);
   toast('Fundo pronto! Veja nos seus downloads.');
 }
-
-/* painel da coordenação */
-function renderAdmin(){
-  API.metas().then(r=>{ if(r && r.length) METAS=r; desenhar(); }).catch(()=>desenhar());
-  function desenhar(){
-    $('#adminLinhas').innerHTML = METAS.map(m=>{ const c=CANDS.find(x=>x.id===PILAR_MASCOTE[m.pilar]);
-      return `<div class="linha" data-pilar="${m.pilar}"><b><img src="${IMG[c.id]}" alt="">${esc(c.pilar)}</b>
-        <label>Indicador</label><input data-k="descricao" value="${esc(m.descricao)}" maxlength="80">
-        <div class="dois"><div><label>Realizado</label><input data-k="atual" type="number" inputmode="decimal" step="any" min="0" value="${+m.atual}"></div>
-        <div><label>Meta</label><input data-k="meta" type="number" inputmode="decimal" step="any" min="0" value="${+m.meta}"></div></div></div>`; }).join('');
-  }
-}
-async function salvarAdmin(){
-  const pin=$('#adminPin').value.trim(); $('#adminErr').textContent='';
-  if(SB && !pin) return $('#adminErr').textContent='Informe o PIN da coordenação.';
-  const dados=[...document.querySelectorAll('#adminLinhas .linha')].map(l=>({ pilar:l.dataset.pilar,
-    descricao:l.querySelector('[data-k=descricao]').value, atual:+l.querySelector('[data-k=atual]').value||0, meta:+l.querySelector('[data-k=meta]').value||0 }));
-  if(dados.some(d=>d.meta<=0)) return $('#adminErr').textContent='A meta de cada pilar precisa ser maior que zero.';
-  try{
-    const r=await API.salvarMetas(pin, dados);
-    if(!r || !r.ok) return $('#adminErr').textContent = r && r.erro==='pin' ? 'PIN incorreto.' : 'Não foi possível salvar.';
-    toast('Metas atualizadas! ✅'); await carregarMetas(); ir('fundos');
-  }catch(e){ console.error(e); $('#adminErr').textContent='Falha de conexão. Tente de novo.'; }
-}
-
 
 
 /* =====================================================================
@@ -1837,16 +1820,17 @@ async function salvarAdmin(){
 function abrirSim(){
   const n=LS.get('corrida_demo',[]).length, st=estado();
   $('#premioBody').innerHTML=`<h3>🧪 Modo simulação</h3>
-    <p class="lead" style="margin:0">Nada vai para o banco nem dispara WhatsApp. ${SIM_FIM?'<b>Corrida encerrada (simulada).</b>':`<b>Fase de hoje: ${st.fase}.</b>`} Corridas simuladas: <b>${n}</b>.</p>
+    <p class="lead" style="margin:0">Nada vai para o banco nem dispara WhatsApp. ${SIM_FIM?'<b>Corrida encerrada (simulada).</b>':`<b>Fase de hoje: ${rotFase(st.fase)}.</b>`} Corridas simuladas: <b>${n}</b>.</p>
     <div class="simgrid">
       <h4>Fase do dia</h4>
-      <div class="treinos">${FASES.map(F=>`<button onclick="simFase(${F.n})" ${st.fase===F.n&&!SIM_FIM?'style="background:#7a2cbf;color:#fff"':''}>F${F.n}</button>`).join('')}</div>
+      <div class="treinos">${CAL.map(c=>`<button onclick="simFase(${c.p})" ${st.fase===c.p&&!SIM_FIM?'style="background:#7a2cbf;color:#fff"':''}>${c.mundo}-${c.dia}</button>`).join('')}</div>
       <h4>Corridas da equipe</h4>
       <div class="simtres"><button class="btn ghost" onclick="simCorridas(40)">+40</button><button class="btn ghost" onclick="simCorridas(200)">+200</button><button class="btn ghost" onclick="simCorridas(0,true)">Empate</button></div>
       <button class="btn ghost" onclick="simZerarHoje()">Liberar nova corrida válida hoje</button>
       ${SIM_FIM?`<button class="btn" onclick="simFim(false)">↩️ Voltar para corrida em andamento</button>`:`<button class="btn orange" onclick="simFim(true)">🏁 Encerrar e ver o mascote oficial</button>`}
-      <h4>Fase 2 · metas do processo</h4>
+      <h4>Fase 2 · metas e fundos</h4>
       <div class="simtres"><button class="btn ghost" onclick="simMetas(0)">0%</button><button class="btn ghost" onclick="simMetas(.47)">47%</button><button class="btn ghost" onclick="simMetas(1)">100%</button></div>
+      <button class="btn ghost" onclick="simLiberar()">🔓 Liberar próximo fundo</button>
       <h4>Recomeçar</h4>
       <button class="btn ghost" style="color:var(--red)" onclick="simLimpar()">Apagar tudo da simulação</button>
     </div>`;
@@ -1858,20 +1842,27 @@ function simCorridas(q, empate=false){
   const sorteia=()=>{ let r=Math.random(), a=0; for(const k in pesos){ a+=pesos[k]; if(r<a) return k; } return 'elo'; };
   if(empate){ const conta=k=>all.filter(v=>v.mascote===k).length, alvo=Math.max(...CANDS.map(c=>conta(c.id)))+5;
     ['nova','elo'].forEach(k=>{ for(let i=conta(k);i<alvo;i++) all.push({ap:'sim'+all.length, mascote:k, fase:1, dia:DIAS[0], pontos:500}); }); }
-  for(let i=0;i<q;i++) all.push({ap:'sim'+(all.length), mascote:sorteia(), fase:1+(i%9), dia:Math.random()<.5?hojeISO():DIAS[i%DIAS.length], pontos:300+Math.floor(Math.random()*400)});
+  for(let i=0;i<q;i++) all.push({ap:'sim'+(all.length), mascote:sorteia(), fase:1+(i%DIAS.length), dia:Math.random()<.5?hojeISO():DIAS[i%DIAS.length], pontos:300+Math.floor(Math.random()*400)});
   LS.set('corrida_demo',all); fecharPremio(); toast(empate?'Empate criado entre NOVA e ELO':`+${q} corridas simuladas`); carregarParticipacao(); if(tela==='apuracao') renderApuracaoTela();
 }
 function simZerarHoje(){ LS.set('corrida_demo', LS.get('corrida_demo',[]).filter(v=>!(v.ap===APARELHO && v.dia===hojeISO()))); const h=HIST(); delete h[hojeISO()]; LS.set('corrida_hist',h); SIT.jogou_hoje=false; ULTIMO=null; fecharPremio(); toast('Pronto: a próxima corrida de hoje vale.'); ir('inicio'); }
 function simFim(on){ on ? SS.set('sim_fim','1') : SS.del('sim_fim'); location.hash = on ? 'apuracao' : 'inicio'; location.reload(); }
-function simMetas(f){ LS.set('urna_metas_demo', METAS_PADRAO.map(m=>({...m, atual:+(m.meta*f).toFixed(1), atualizado_em:new Date().toISOString()}))); fecharPremio(); carregarMetas().then(()=>{ if(tela!=='fundos') ir('fundos'); }); toast(`Metas em ${Math.round(f*100)}%`); }
+function simMetas(f){ LS.set('corrida_metas_demo', METAS_PADRAO.map(m=>({...m, pct:Math.round(f*1000)/10, atualizado_em:new Date().toISOString()}))); fecharPremio(); carregarMetas().then(()=>{ if(tela!=='fundos') ir('fundos'); }); toast(`Metas em ${Math.round(f*100)}%`); }
+function simLiberar(){
+  const lib=LS.get('corrida_fundos_demo',[{ordem:1,fundo:'equipe'}]), usados=lib.map(f=>f.fundo), all=LS.get('corrida_demo',[]);
+  const rest=CANDS.map(c=>c.id).filter(id=>!usados.includes(id)); if(!rest.length) return toast('Todos os fundos já foram liberados.');
+  rest.sort((a,b)=>all.filter(v=>v.mascote===a).length-all.filter(v=>v.mascote===b).length || Math.random()-.5);
+  lib.push({ordem:lib.length+1, fundo:rest[0], liberado_em:new Date().toISOString()}); LS.set('corrida_fundos_demo',lib);
+  fecharPremio(); toast('🔓 Fundo liberado'); carregarMetas().then(()=>{ if(tela!=='fundos') ir('fundos'); });
+}
 function simSair(){ SS.del('sim_on'); SS.del('sim_fim'); SS.del('sim_fase'); location.href=location.pathname; }
-function simLimpar(){ ['corrida_demo','urna_metas_demo','corrida_hist','corrida_nivel_visto','corrida_ultimo_mascote'].forEach(k=>{ try{ localStorage.removeItem(k); }catch(e){} }); try{ sessionStorage.clear(); }catch(e){} location.hash=''; location.reload(); }
+function simLimpar(){ ['corrida_demo','corrida_metas_demo','corrida_fundos_demo','corrida_nome','corrida_hist','corrida_nivel_visto','corrida_ultimo_mascote'].forEach(k=>{ try{ localStorage.removeItem(k); }catch(e){} }); try{ sessionStorage.clear(); }catch(e){} location.hash=''; location.reload(); }
 
 /* =====================================================================
    INÍCIO DA APLICAÇÃO
    ===================================================================== */
 (async function iniciar(){
-  if(SIM){ $('#simFaixa').hidden=false; const n=$('#demoNote'); n.hidden=false; n.innerHTML='<b>🧪 Modo simulação:</b> corridas e metas ficam só neste navegador. Use a faixa roxa no topo para trocar a fase do dia, gerar corridas da equipe e encerrar a corrida.'; }
+  if(SIM){ $('#simFaixa').hidden=false; const n=$('#demoNote'); n.hidden=false; n.innerHTML='<b>🧪 Modo simulação:</b> corridas e metas ficam só neste navegador. Use a faixa roxa no topo para trocar o dia, gerar corridas da equipe, liberar fundos e encerrar a corrida.'; }
   $$('.dataFim').forEach(e=>e.textContent=dataBR(CONFIG.FIM)); $$('.dataAbre').forEach(e=>e.textContent=dataBR(dataAbre()));
   try{ SIT = await API.situacao(); }catch(e){ console.error(e); }
   if(!SIT.jogou_hoje){ const h=HIST(); if(h[hojeISO()] && !SB) SIT.jogou_hoje=true; }
@@ -1879,8 +1870,7 @@ function simLimpar(){ ['corrida_demo','urna_metas_demo','corrida_hist','corrida_
   setInterval(()=>{ if(['inicio','apuracao','fundos','resultado'].includes(tela)){ carregarParticipacao(); carregarMetas(); } }, 60000);
   countdown(); setInterval(()=>{ countdown(); if(tela==='apuracao') tickLacre(); },1000); tickLacre();
   let inicial='inicio';
-  if(new URLSearchParams(location.search).has('admin')) inicial='admin';
-  else if(/^#fundos/.test(location.hash)) inicial='fundos';
+  if(/^#fundos/.test(location.hash)) inicial='fundos';
   else if(/^#apuracao/.test(location.hash)) inicial='apuracao';
   else if(/^#resultado/.test(location.hash) && SIT.jogou_hoje) inicial='resultado';
   history.replaceState({t:inicial},'','#'+inicial); ir(inicial,{push:false});
