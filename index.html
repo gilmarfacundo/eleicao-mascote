@@ -596,6 +596,7 @@ body.emjogo main.wrap{max-width:none;padding:0}
       <div class="stat"><b id="rTrop">0</b><small>Tropeços</small></div>
     </div>
     <div class="validade" id="rValidade"></div>
+    <div class="validade" id="rMotiva" hidden style="background:#fff8e6;color:#5a3a00"></div>
     <div class="obrigado" id="obrigadoBox" hidden><canvas id="cvObrigado" width="1080" height="1080"></canvas><button class="btn" onclick="baixarObrigado()">Baixar imagem</button></div>
     <div class="amanha" id="rAmanha"></div>
     <div class="stack">
@@ -1137,8 +1138,9 @@ function criarJogo(canvas, op){
     }
     if(extra.pisca && Math.floor(t*14)%2) return;
     ctx.save();
-    if(noAr){ ctx.translate(sx+s.width/2, Math.round(y)-s.height/2); ctx.rotate(-.12); ctx.drawImage(s, -s.width/2|0, -s.height/2|0); }
-    else ctx.drawImage(s, sx, Math.round(y)-s.height+bob);
+    const ac = TEMA && typeof acessorioDe==='function' ? acessorioDe(TEMA) : null, an = ac && ANCORAS.sprite[id];
+    if(noAr){ ctx.translate(sx+s.width/2, Math.round(y)-s.height/2); ctx.rotate(-.12); ctx.drawImage(s, -s.width/2|0, -s.height/2|0); if(an) desenharAcessorio(ctx, ac, (-s.width/2|0)+an[0], (-s.height/2|0)+an[1], an[2], an[3]); }
+    else { ctx.drawImage(s, sx, Math.round(y)-s.height+bob); if(an) desenharAcessorio(ctx, ac, sx+an[0], Math.round(y)-s.height+bob+an[1], an[2], an[3]); }
     ctx.restore();
     if(extra.turbo){ ctx.fillStyle='#7fe3ff'; for(let i=0;i<4;i++) ctx.fillRect(sx-6-i*7, Math.round(y)-s.height+10+i*7, 5, 2); }
     if(extra.aura){ ctx.strokeStyle=extra.aura; ctx.strokeRect(sx-1, Math.round(y)-s.height-1, s.width+2, s.height+2); }
@@ -1206,39 +1208,102 @@ const PIX_TEMA = {
 
 // data = data oficial · dia = dia em que a fase e o fundo acontecem no jogo
 const TEMAS = [
-  { id:'halloween',  data:'2026-10-31', dia:'2026-10-30', nome:'Halloween e Dia do Saci', item:'abobora', ceu:['#2c0f5c','#4a1f86','#6a35a8'],
+  { id:'halloween', motiva:'Criatividade e tradição caminham juntas. Siga firme na pista!',  data:'2026-10-31', dia:'2026-10-30', nome:'Halloween e Dia do Saci', item:'abobora', ceu:['#2c0f5c','#4a1f86','#6a35a8'],
     frase:'Duas tradições na mesma noite de corrida.', fundo:{ t:'31 DE OUTUBRO', l:['Halloween e Dia do Saci.','Duas tradições na mesma noite de corrida.'], selo:'EDIÇÃO ESPECIAL', paleta:'halloween', decor:'halloween' } },
-  { id:'cultura',    data:'2026-11-05', dia:'2026-11-05', nome:'Dia Nacional da Cultura', item:'livro', ceu:['#ffb36b','#ffcf94','#ffe6c4'],
+  { id:'cultura', motiva:'Cultura é o que construímos juntos, todos os dias. Cada fase também conta essa história.',    data:'2026-11-05', dia:'2026-11-05', nome:'Dia Nacional da Cultura', item:'livro', ceu:['#ffb36b','#ffcf94','#ffe6c4'],
     frase:'Cultura é o que a gente constrói junto.', fundo:{ t:'CULTURA', l:['Dia Nacional da Cultura.','Cada história amplia o caminho.'], selo:'05 DE NOVEMBRO', paleta:'cultura' } },
-  { id:'republica',  data:'2026-11-15', dia:'2026-11-12', nome:'Proclamação da República', item:'estrela', ceu:['#1d4fd6','#3f76e0','#7fa2ff'],
+  { id:'republica', motiva:'Construir algo coletivo pede o compromisso de cada um. Obrigado por fazer a sua parte.',  data:'2026-11-15', dia:'2026-11-12', nome:'Proclamação da República', item:'estrela', ceu:['#1d4fd6','#3f76e0','#7fa2ff'],
     frase:'Uma data para lembrar a história do país.', fundo:{ t:'REPÚBLICA', l:['Proclamação da República.','15 de novembro.'], selo:'15 DE NOVEMBRO', paleta:'brasil' } },
-  { id:'gentileza',  data:'2026-11-13', dia:'2026-11-13', nome:'Dia Mundial da Gentileza', item:'coracao', ceu:['#ff9ab8','#ffbfd2','#ffe1ea'],
+  { id:'gentileza', motiva:'Um gesto gentil fortalece toda a equipe. Que tal começar o dia com um?',  data:'2026-11-13', dia:'2026-11-13', nome:'Dia Mundial da Gentileza', item:'coracao', ceu:['#ff9ab8','#ffbfd2','#ffe1ea'],
     frase:'Gentileza também é trabalho em equipe.', fundo:{ t:'GENTILEZA', l:['Dia Mundial da Gentileza.','Um gesto de cuidado muda o dia de alguém.'], selo:'13 DE NOVEMBRO', paleta:'gentileza' } },
-  { id:'musico',     data:'2026-11-22', dia:'2026-11-17', nome:'Dia do Músico', item:'nota', ceu:['#7fe3ff','#a6ecff','#d2f6ff'],
+  { id:'musico', motiva:'Como numa boa música, a equipe rende mais quando todos seguem no mesmo ritmo.',     data:'2026-11-22', dia:'2026-11-17', nome:'Dia do Músico', item:'nota', ceu:['#7fe3ff','#a6ecff','#d2f6ff'],
     frase:'Cada fase no seu ritmo.', fundo:{ t:'DIA DO MÚSICO', l:['22 de novembro.','Toda equipe tem o seu ritmo.'], selo:'22 DE NOVEMBRO', paleta:'musica' } },
-  { id:'consciencia',data:'2026-11-20', dia:'2026-11-18', nome:'Dia Nacional de Zumbi e da Consciência Negra', item:'folha', ceu:['#5b3a19','#8a5a2b','#c9902a'],
+  { id:'consciencia', motiva:'Respeito e igualdade se constroem todos os dias, com atitudes.',data:'2026-11-20', dia:'2026-11-18', nome:'Dia Nacional de Zumbi e da Consciência Negra', item:'folha', ceu:['#5b3a19','#8a5a2b','#c9902a'],
     frase:'Memória, respeito e igualdade.', fundo:{ t:'20 DE NOVEMBRO', l:['Dia Nacional de Zumbi e','da Consciência Negra.'], selo:'MEMÓRIA E IGUALDADE', paleta:'consciencia' } },
-  { id:'bandeira',   data:'2026-11-19', dia:'2026-11-19', nome:'Dia da Bandeira', item:'bandeira', ceu:['#2fa84f','#5cc476','#a6e3b6'],
+  { id:'bandeira', motiva:'Cada fase completa é um passo à frente. O progresso começa em cada um de nós.',   data:'2026-11-19', dia:'2026-11-19', nome:'Dia da Bandeira', item:'bandeira', ceu:['#2fa84f','#5cc476','#a6e3b6'],
     frase:'Verde, amarelo, azul e branco na pista.', fundo:{ t:'DIA DA BANDEIRA', l:['19 de novembro.','Ordem e progresso, fase a fase.'], selo:'19 DE NOVEMBRO', paleta:'brasil' } },
-  { id:'mulheres',   data:'2026-11-25', dia:'2026-11-25', nome:'Dia Internacional pela Eliminação da Violência contra as Mulheres', item:'laco', ceu:['#f47a1f','#ff9a4d','#ffc58a'],
+  { id:'mulheres', motiva:'Respeito não se negocia. Juntos por ambientes seguros para todas. Ligue 180.',   data:'2026-11-25', dia:'2026-11-25', nome:'Dia Internacional pela Eliminação da Violência contra as Mulheres', item:'laco', ceu:['#f47a1f','#ff9a4d','#ffc58a'],
     frase:'Pelo fim da violência contra as mulheres. Ligue 180.', fundo:{ t:'25 DE NOVEMBRO', l:['Pelo fim da violência contra','as mulheres. Ligue 180.'], selo:'RESPEITO SEMPRE', paleta:'laranja' } },
-  { id:'samba',      data:'2026-12-02', dia:'2026-12-02', nome:'Dia Nacional do Samba', item:'pandeiro', ceu:['#2fa84f','#ffd34d','#ffe9a6'],
+  { id:'samba', motiva:'Ritmo, alegria e trabalho em conjunto: a mesma receita de uma boa equipe.',      data:'2026-12-02', dia:'2026-12-02', nome:'Dia Nacional do Samba', item:'pandeiro', ceu:['#2fa84f','#ffd34d','#ffe9a6'],
     frase:'Patrimônio cultural brasileiro na pista.', fundo:{ t:'SAMBA', l:['Dia Nacional do Samba.','Patrimônio cultural do Brasil.'], selo:'02 DE DEZEMBRO', paleta:'samba' } },
-  { id:'pcd',        data:'2026-12-03', dia:'2026-12-03', nome:'Dia Internacional da Pessoa com Deficiência', item:'acesso', ceu:['#4aa3ff','#7fbcff','#bcdcff'], semBuracos:true,
+  { id:'pcd', motiva:'Inclusão é tornar o caminho possível para todas as pessoas. Acessibilidade é compromisso de todos.',        data:'2026-12-03', dia:'2026-12-03', nome:'Dia Internacional da Pessoa com Deficiência', item:'acesso', ceu:['#4aa3ff','#7fbcff','#bcdcff'], semBuracos:true,
     frase:'Fase acessível: pista sem buracos. Inclusão é para todos.', fundo:{ t:'3 DE DEZEMBRO', l:['Dia Internacional da','Pessoa com Deficiência.'], selo:'INCLUSÃO E ACESSIBILIDADE', paleta:'padrao' } },
-  { id:'voluntario', data:'2026-12-05', dia:'2026-12-04', nome:'Dia Internacional do Voluntário', item:'coracao2', ceu:['#ffb056','#ffcf94','#ffe6c4'],
+  { id:'voluntario', motiva:'Doar tempo e talento transforma quem recebe e quem oferece.', data:'2026-12-05', dia:'2026-12-04', nome:'Dia Internacional do Voluntário', item:'coracao2', ceu:['#ffb056','#ffcf94','#ffe6c4'],
     frase:'Quem doa tempo, fortalece a comunidade.', fundo:{ t:'VOLUNTARIADO', l:['Dia Internacional do Voluntário.','Tempo dedicado aos outros transforma.'], selo:'05 DE DEZEMBRO', paleta:'laranja' } },
-  { id:'direitos',   data:'2026-12-10', dia:'2026-12-10', nome:'Dia dos Direitos Humanos', item:'pomba', ceu:['#3f76e0','#7fa2ff','#c6d6ff'],
+  { id:'direitos', motiva:'Dignidade e respeito para todas as pessoas, todos os dias.',   data:'2026-12-10', dia:'2026-12-10', nome:'Dia dos Direitos Humanos', item:'pomba', ceu:['#3f76e0','#7fa2ff','#c6d6ff'],
     frase:'Dignidade e direitos iguais para todas as pessoas.', fundo:{ t:'DIREITOS HUMANOS', l:['10 de dezembro.','Dignidade para todas as pessoas.'], selo:'10 DE DEZEMBRO', paleta:'padrao' } },
   // fases bônus (depois da chegada): não contam escolha
-  { id:'natal1',     data:'2026-12-25', dia:'2026-12-14', bonus:true, nome:'Natal', item:'presente', ceu:['#0f3a85','#16509f','#3f76e0'],
+  { id:'natal1', motiva:'Que o fim de ano traga descanso e boas memórias. Obrigado por cada fase deste ano.',     data:'2026-12-25', dia:'2026-12-14', bonus:true, nome:'Natal', item:'presente', ceu:['#0f3a85','#16509f','#3f76e0'],
     frase:'Faltam 11 dias para o Natal.', fundo:{ t:'BOAS FESTAS', l:['Fim de ano na pista.','Boas festas para toda a equipe.'], selo:'EDIÇÃO DE FIM DE ANO', paleta:'festas', decor:'festas' }, idFundo:'festas' },
-  { id:'natal2',     data:'2026-12-25', dia:'2026-12-23', bonus:true, nome:'Natal', item:'presente', ceu:['#0f3a85','#16509f','#3f76e0'],
+  { id:'natal2', motiva:'Que o fim de ano traga descanso e boas memórias. Obrigado por cada fase deste ano.',     data:'2026-12-25', dia:'2026-12-23', bonus:true, nome:'Natal', item:'presente', ceu:['#0f3a85','#16509f','#3f76e0'],
     frase:'Faltam dois dias para o Natal.', idFundo:'festas' },
-  ...['2026-12-26','2026-12-27','2026-12-28','2026-12-29','2026-12-30','2026-12-31'].map((d,i)=>({ id:'anonovo'+(i+1), data:'2027-01-01', dia:d, bonus:true, nome:'Ano Novo', item:'estrela', ceu:['#02081f','#0a1a4f','#14307a'],
+  ...['2026-12-26','2026-12-27','2026-12-28','2026-12-29','2026-12-30','2026-12-31'].map((d,i)=>({ id:'anonovo'+(i+1), motiva:'Novos começos, novas largadas: que 2027 traga grandes chegadas.', data:'2027-01-01', dia:d, bonus:true, nome:'Ano Novo', item:'estrela', ceu:['#02081f','#0a1a4f','#14307a'],
     frase:'Contagem para 2027.', idFundo:'anonovo', ...(i===0?{fundo:{ t:'FELIZ 2027', l:['Uma nova largada vem aí.','Que 2027 seja de grandes chegadas.'], selo:'EDIÇÃO ANO NOVO', paleta:'anonovo', decor:'anonovo' }}:{}) })),
 ];
 const temaDoDia = d => TEMAS.find(t=>t.dia===d) || null;
+
+/* =====================================================================
+   ACESSÓRIOS DAS DATAS — desenhados sobre a cabeça dos mascotes
+   ===================================================================== */
+const PIX_ACESS = {
+  natal:{ pal:{r:'#d93838',R:'#a82424',w:'#ffffff'}, img:[
+    '............ww.','.........rrrww.','......rrrrrr...','....rrrrrrrr...','...rrrrrrrrrr..','..rrRrrrrrrrrr.','.rrrrrrrrrRrrr.','wwwwwwwwwwwwwww','wwwwwwwwwwwwwww'] },
+  festa:{ pal:{y:'#ffd34d',o:'#f47a1f',w:'#ffffff',b:'#4aa3ff'}, img:[
+    '.....w.....','....www....','....yyy....','...yoyyy...','...yyyoy...','..ybyyyyy..','..yyyybyy..','.yyoyyyyoy.','.yyyyyoyyy.','ybyyyyyyyby','yyyyyyyyyyy'] },
+  saci:{ pal:{r:'#d93838',R:'#a82424',w:'#ff7a7a'}, img:[
+    '.......rr....','......rrrr...','.....rrrrr...','....rrrrrrr..','...rrwrrrrrr.','..rrwrrrrrrr.','.rrrrrrrrrrrr','RRRRRRRRRRRRR'] },
+  boina:{ pal:{k:'#1b1b2a',K:'#3a3a52'}, img:['......k......','...kkkkkkk...','.kkkKkkkkkkk.','kkkkkkkkkkkkk','KKKKKKKKKKKKK'] },
+  cartola:{ pal:{k:'#141420',g:'#2fa84f',y:'#ffd34d'}, img:['..kkkkkkk..','..kkkkkkk..','..kkkkkkk..','..kkkkkkk..','..ggggggg..','..yyyyyyy..','kkkkkkkkkkk'] },
+  panama:{ pal:{w:'#f2e6c8',W:'#d9c79a',k:'#1b1b2a'}, img:['....wwwww....','...wwwwwww...','...kkkkkkk...','WwwwwwwwwwwwW','.WWWWWWWWWWW.'] },
+  bone:{ pal:{o:'#f47a1f',O:'#c45a0c',w:'#ffffff'}, img:['..ooooooo.....','.oooowoooo....','ooooooooooo...','OOOOOOOOOOOOOO'] },
+  fones:{ pal:{k:'#1b1b2a',r:'#f47a1f'}, img:[
+    '....kkkkkkk....','..kk.......kk..','.k...........k.','k.............k','k.............k','rr...........rr','rrr.........rrr','rrr.........rrr','rr...........rr'] },
+};
+// acessório de cada data: chapéu (sobre a cabeça) ou broche (ao lado da cabeça)
+const ACESSORIO_DO_TEMA = { halloween:'saci', cultura:'boina', republica:'cartola', gentileza:'pin:coracao', musico:'fones',
+  consciencia:'pin:estrela', bandeira:'pin:bandeira', mulheres:'pin:laco', samba:'panama', pcd:'pin:acesso', voluntario:'bone',
+  direitos:'pin:pomba', natal1:'natal', natal2:'natal' };
+const acessorioDe = tema => !tema ? null : (ACESSORIO_DO_TEMA[tema.id] || (tema.id.startsWith('anonovo')?'festa':null));
+const FATOR_CHAPEU = { natal:1.25, festa:.55, saci:.85, boina:1.05, cartola:.8, panama:1.25, bone:1.0, fones:1.25 };
+
+/* âncoras: [x do centro da cabeça, y do topo, largura da cabeça, inclinação em graus] */
+const ANCORAS = {
+  solo:  { novi:[255,45,100,-8], nova:[255,45,150,10], elo:[240,8,150,0], meioca:[215,52,140,0] },
+  grupo: { elo:[200,78,170,-6], meioca:[440,60,120,0], novi:[625,112,70,0], nova:[860,90,130,10] },
+  corp:  { novi:[1278,168,95,-5], elo:[1305,102,190,8], nova:[1320,170,160,15], meioca:[1258,150,160,-4] },
+  poster:{ novi:[270,395,90,-10], nova:[560,405,150,12], elo:[1190,380,130,0], meioca:[1485,290,150,0] },
+  sprite:{ novi:[12,3,14,0], nova:[14,6,13,8], elo:[19,2,14,0], meioca:[11,2,12,0] },
+};
+// recortes usados nas poses de agradecimento: [origem, mascote, x0, y0, x1, y1, largura final]
+const RECORTES_POSE = {
+  est_novi:['corp','novi',1000,40,1620,545,560], est_elo:['corp','elo',1000,60,1640,545,560], est_nova:['corp','nova',1000,60,1620,545,560],
+  est_meioca:['corp','meioca',1080,110,1580,485,500],
+  pos_novi:['poster','novi',40,385,410,735,370], pos_nova:['poster','nova',320,370,690,740,370], pos_elo:['poster','elo',930,370,1350,725,420], pos_meioca:['poster','meioca',1260,260,1630,735,370],
+  gru_elo:['grupo','elo',5,60,335,520,330], gru_meioca:['grupo','meioca',300,40,505,520,205], gru_novi:['grupo','novi',495,80,745,520,250], gru_nova:['grupo','nova',700,60,1000,520,300],
+};
+function ancoraPose(pose, mascote){
+  if(pose==='solo') return ANCORAS.solo[mascote];
+  const R=RECORTES_POSE[pose]; if(!R) return null;
+  const [orig, m, x0, y0, x1, , wf]=R, a=ANCORAS[orig][m], f=wf/(x1-x0);
+  return [(a[0]-x0)*f, (a[1]-y0)*f, a[2]*f, a[3]];
+}
+// desenha o acessório; (x,y,w,ang) já no espaço do canvas
+function desenharAcessorio(ctx, tipo, x, y, w, ang=0, espelho=false){
+  if(!tipo) return;
+  ctx.save(); ctx.imageSmoothingEnabled=false; ctx.translate(x, y); ctx.rotate((espelho?-ang:ang)*Math.PI/180); if(espelho) ctx.scale(-1,1);
+  if(tipo.startsWith('pin:')){
+    const k=tipo.slice(4), mapa=(typeof PIX_TEMA!=='undefined'&&PIX_TEMA[k]); if(!mapa){ ctx.restore(); return; }
+    const c=pixCanvas(mapa, 1), alvo=w*.42, e=alvo/c.width;
+    ctx.fillStyle='rgba(255,255,255,.9)'; ctx.beginPath(); ctx.arc(w*.5, w*.08, alvo*.72, 0, 7); ctx.fill();
+    ctx.drawImage(c, w*.5-alvo/2, w*.08-c.height*e/2, alvo, c.height*e);
+  } else {
+    const mapa=PIX_ACESS[tipo]; if(!mapa){ ctx.restore(); return; }
+    const c=pixCanvas(mapa, 1), alvo=w*(FATOR_CHAPEU[tipo]||1), e=alvo/c.width, h=c.height*e;
+    const desce = tipo==='fones' ? h*.62 : h*.22;
+    ctx.drawImage(c, -alvo/2, -h+desce, alvo, h);
+  }
+  ctx.restore();
+}
 
 
 /* ---------------- datas (fuso de Brasília) ---------------- */
@@ -1400,11 +1465,11 @@ function renderInicio(){
   $('#capaImg').src = IMG.grupo;
   const ola=$('#olaBox'); ola.hidden=!NOME(); if(NOME()) ola.innerHTML=`<span>👋 Olá, <b>${esc(NOME())}</b></span><button onclick="ir('nome')">Não é você?</button>`;
   let html='';
-  if(st.bonus) html=`<div class="hojecard"><div class="num">FASE<b>★</b></div><div><h3>Fase bônus · ${esc(C.tema.nome)}</h3><p>${esc(C.tema.frase)} Não conta escolha de mascote.</p>${SIT.jogou_hoje?'<span class="ok">✓ Você já correu hoje</span>':''}</div></div>`;
+  if(st.bonus) html=`<div class="hojecard"><div class="num">FASE<b>★</b></div><div><h3>Fase bônus · ${esc(C.tema.nome)}</h3><p>${esc(C.tema.motiva||C.tema.frase)} Não conta escolha de mascote.</p>${SIT.jogou_hoje?'<span class="ok">✓ Você já correu hoje</span>':''}</div></div>`;
   else if(st.motivo==='depois') html=`<div class="hojecard"><div class="num">FIM<b>🏆</b></div><div><h3>A corrida terminou!</h3><p>Veja qual mascote foi o mais escolhido.${st.prox?` Próxima fase bônus em ${dataBR(st.prox)}.`:''}</p></div></div>`;
   else if(st.motivo==='antes') html=`<div class="hojecard"><div class="num">FASE<b>1</b></div><div><h3>Largada em ${dataBR(CONFIG.INICIO)}</h3><p>Enquanto isso, conheça os mascotes e ouça os hinos.</p></div></div>`;
   else if(st.motivo==='fimdesemana') html=`<div class="hojecard"><div class="num">FIM DE<b>☕</b></div><div><h3>Pista fechada hoje</h3><p>${st.prox?`A fase ${rotFase(DIAS.indexOf(st.prox)+1)} abre em ${dataBR(st.prox)}.`:'A próxima fase abre no próximo dia útil.'}</p></div></div>`;
-  else html=`<div class="hojecard"><div class="num">MUNDO<b>${C.mundo}-${C.dia}</b></div><div><h3>${C.tema?'★ '+esc(C.tema.nome):F.nome}</h3><p>${C.tema?esc(C.tema.frase)+' Fundo da data liberado hoje.':F.sub} · fase ${st.fase} de ${DIAS.length}</p><span class="metabadge">🎯 Desafio do dia: ${C.meta} ${C.tema?'itens':'pastas'}</span> ${SIT.jogou_hoje?'<span class="ok">✓ Você já correu hoje</span>':''}</div></div>`;
+  else html=`<div class="hojecard"><div class="num">MUNDO<b>${C.mundo}-${C.dia}</b></div><div><h3>${C.tema?'★ '+esc(C.tema.nome):F.nome}</h3><p>${C.tema?esc(C.tema.motiva||C.tema.frase)+' Fundo da data liberado hoje.':F.sub} · fase ${st.fase} de ${DIAS.length}</p><span class="metabadge">🎯 Desafio do dia: ${C.meta} ${C.tema?'itens':'pastas'}</span> ${SIT.jogou_hoje?'<span class="ok">✓ Você já correu hoje</span>':''}</div></div>`;
   $('#hojeCard').innerHTML=html;
   renderMissoes(); renderF2Card();
 }
@@ -1617,6 +1682,7 @@ function renderResultado(){
   else if(r && r.erro){ v.className='validade treino'; v.textContent = r.erro==='conexao' ? 'Não foi possível registrar agora (sem conexão). Tente correr de novo mais tarde.' : 'Não foi possível registrar esta corrida.'; }
   else if(r){ v.className='validade treino'; v.textContent = 'Sua corrida de hoje já estava registrada. Volte no próximo dia útil.'; }
   else v.className='validade treino', v.textContent='Corra a fase de hoje para registrar sua escolha.';
+  const Cm = r && r.fase ? infoFase(r.fase) : null, mv=$('#rMotiva'); mv.hidden = !(Cm && Cm.tema && Cm.tema.motiva); if(!mv.hidden) mv.innerHTML=`★ <b>${esc(Cm.tema.nome)}</b><br>${esc(Cm.tema.motiva)}`;
   const prox = DIAS.find(d=>d>hojeISO()), proxB = CAL_BONUS.find(c=>c.data>hojeISO());
   $('#rAmanha').innerHTML = !prox && proxB && hojeISO()>=CONFIG.FIM
     ? `<div><small>Próxima fase bônus · ${dataBR(proxB.data)}</small><br><b>${esc(proxB.tema.nome.toUpperCase())}</b></div><div style="font-size:26px">★</div>`
@@ -1755,6 +1821,8 @@ const SLOT_ETAPA = {2:1, 3:2, 4:3, 5:4};
 
 async function carregarFundos(){
   try{ const f=await API.fundos(); if(f && f.length) FUNDOS_LIB=f.slice().sort((a,b)=>a.ordem-b.ordem); }catch(e){ console.error(e); }
+  if(hojeISO()>CONFIG.FIM && CAMPEAO_AP===undefined){ try{ const rows=(await API.apuracao()).filter(r=>r.mascote!=='_total').sort((a,b)=>b.escolhas-a.escolhas);
+    CAMPEAO_AP = rows[0] && +rows[0].escolhas>0 && !(rows[1] && +rows[1].escolhas===+rows[0].escolhas) ? rows[0].mascote : null; }catch(e){ CAMPEAO_AP=null; } }
   renderF2Card(); if(tela==='fundos') renderFundos();
   const vistos=+(LS.get('corrida_fundos_vistos',1)||1);
   if(FUNDOS_LIB.length>vistos){ LS.set('corrida_fundos_vistos',FUNDOS_LIB.length); if(tela==='inicio'||tela==='fundos'){ confete(); toast('🔓 Novo fundo do Teams liberado!'); } }
@@ -1958,11 +2026,24 @@ function blocoTexto(ctx, T, opts){
   ctx.font='600 38px Archivo, sans-serif'; ctx.fillStyle='#ffffff'; T.l.forEach((l,i)=>ctx.fillText(l, 118, fy+i*48));
   ctx.textAlign='right'; ctx.font=`16px ${PX}`; ctx.fillStyle='rgba(255,255,255,.85)'; ctx.fillText('CORRIDA DOS MASCOTES', W-50, H-40); ctx.textAlign='left';
 }
-async function grupoNoPiso(ctx, W, H){
-  const img=await recortado(IMG.grupo); const w=940, hh=img.height*w/img.width, x0=W-w-40, y0=H-150-hh;
+async function grupoNoPiso(ctx, W, H, acess){
+  const img=await recortado(IMG.grupo); const w=940, hh=img.height*w/img.width, x0=W-w-40, y0=H-150-hh, k=w/img.width;
   const sh=ctx.createRadialGradient(x0+w/2,H-150,0,x0+w/2,H-150,w*.55); sh.addColorStop(0,'rgba(0,10,40,.45)'); sh.addColorStop(1,'rgba(0,10,40,0)');
   ctx.save(); ctx.translate(0,H-150); ctx.scale(1,.12); ctx.fillStyle=sh; ctx.fillRect(x0-60,-w*.6,w+120,w*1.2); ctx.restore();
   ctx.imageSmoothingEnabled=true; ctx.drawImage(img, x0, y0, w, hh);
+  if(acess) for(const m in ANCORAS.grupo){ const a=ANCORAS.grupo[m]; desenharAcessorio(ctx, acess, x0+a[0]*k, y0+a[1]*k, a[2]*k, a[3]); }
+}
+// campeão para os fundos depois do resultado (Natal e Ano Novo)
+let CAMPEAO_AP=undefined;
+const campeaoId = () => { const f=FUNDOS_LIB.find(x=>+x.ordem===TOTAL_FUNDOS); return f ? f.fundo : (CAMPEAO_AP||null); };
+async function soloNoPedestal(ctx, id, acess, rotulo){
+  const img=await recortado(IMG[id]), cx=1420, topo=830, pw=600, ph=120, PX='"Press Start 2P", monospace';
+  ctx.fillStyle='#f4b21f'; ctx.beginPath(); ctx.moveTo(cx-pw/2,topo); ctx.lineTo(cx+pw/2,topo); ctx.lineTo(cx+pw/2-26,topo-34); ctx.lineTo(cx-pw/2+26,topo-34); ctx.closePath(); ctx.fill();
+  const fg=ctx.createLinearGradient(0,topo,0,topo+ph); fg.addColorStop(0,'#1b2f9e'); fg.addColorStop(1,'#0d1a66'); ctx.fillStyle=fg; ctx.fillRect(cx-pw/2,topo,pw,ph);
+  ctx.fillStyle='#ffd34d'; ctx.fillRect(cx-pw/2,topo+ph-8,pw,8); ctx.font=`34px ${PX}`; ctx.textAlign='center'; ctx.fillStyle='#ffd34d'; ctx.fillText(rotulo, cx, topo+76); ctx.textAlign='left';
+  const hh=660, w=img.width*hh/img.height, y0=topo-18-hh, k=hh/img.height;
+  ctx.imageSmoothingEnabled=true; ctx.drawImage(img, cx-w/2, y0, w, hh);
+  const a=ANCORAS.solo[id]; if(acess && a) desenharAcessorio(ctx, acess, cx-w/2+a[0]*k, y0+a[1]*k, a[2]*k, a[3]);
 }
 
 async function desenharFundo(id, ordem){
@@ -2012,7 +2093,7 @@ Object.assign(PALETAS, {
 function decorIcones(ctx, item, W, H, Z){
   if(typeof PIX_TEMA==='undefined' || !PIX_TEMA[item]) return;
   const rnd=mulberry32(item.length*313), e=Z.escala||1, [x0,x1,y0,y1]=Z.ceu; ctx.imageSmoothingEnabled=false;
-  for(let i=0;i<7;i++){ const sc=Math.round((6+rnd()*6)*e), c=pixCanvas(PIX_TEMA[item], sc), x=x0+rnd()*(x1-x0-c.width), y=y0+rnd()*(y1-y0-c.height);
+  if(x1>x0) for(let i=0;i<7;i++){ const sc=Math.round((6+rnd()*6)*e), c=pixCanvas(PIX_TEMA[item], sc), x=x0+rnd()*(x1-x0-c.width), y=y0+rnd()*(y1-y0-c.height);
     const gl=ctx.createRadialGradient(x+c.width/2,y+c.height/2,0,x+c.width/2,y+c.height/2,c.width); gl.addColorStop(0,'rgba(255,255,255,.35)'); gl.addColorStop(1,'rgba(255,255,255,0)');
     ctx.fillStyle=gl; ctx.fillRect(x-c.width/2,y-c.height/2,c.width*2,c.height*2); ctx.globalAlpha=.92; ctx.drawImage(c,x,y); ctx.globalAlpha=1; }
   (Z.piso||[]).forEach(([x,y],i)=>{ const c=pixCanvas(PIX_TEMA[item], Math.round((i%2?7:9)*e)); ctx.drawImage(c,x,y); });
@@ -2023,8 +2104,10 @@ async function desenharEspecial(id){
   cenario(ctx, W, H, CH, PALETAS[E.paleta]||PALETAS.padrao, 10+E.t.length);
   if(E.decor) decorTema(ctx, E.decor, W, H, { ceu:[640,1700,30,520], piso: E.decor==='festas'?[[90,830],[330,905],[470,900]]:E.decor==='halloween'?[[110,880],[300,930]]:[[110,880],[320,930],[540,885]], saci:[600,930], teia:[0,0,260], escala:1, luzY:10 });
   else decorIcones(ctx, E.tema.item, W, H, { ceu:[660,1640,40,470], piso:[[110,870],[330,920]] });
-  await grupoNoPiso(ctx, W, H);
-  blocoTexto(ctx, {t:E.t, l:E.l, selo:E.selo}, E.paleta==='festas'?{corK:'#ff8a8a'}:(E.paleta==='anonovo'||E.paleta==='consciencia'||E.paleta==='samba'||E.paleta==='brasil')?{corK:'#ffd34d', corCheck:'#ffd34d'}:{});
+  const ac=acessorioDe(E.tema), camp = E.tema.bonus ? campeaoId() : null;
+  if(camp){ await soloNoPedestal(ctx, camp, ac, 'CAMPEÃO'); }
+  else await grupoNoPiso(ctx, W, H, ac);
+  blocoTexto(ctx, {t:E.t, l:E.l, selo:E.selo, ...(camp?{}:{})}, camp?{nome:CANDS.find(c=>c.id===camp).nome, corK:'#ffd34d', corCheck:'#ffd34d'}: E.paleta==='festas'?{corK:'#ff8a8a'}:(E.paleta==='anonovo'||E.paleta==='consciencia'||E.paleta==='samba'||E.paleta==='brasil')?{corK:'#ffd34d', corCheck:'#ffd34d'}:{});
   return cv;
 }
 function especialAberto(E){ return hojeISO()>=E.abre; }
@@ -2043,7 +2126,7 @@ async function baixarEspecial(id){
 }
 
 async function miniatura(id, ordem){
-  const k=id+'_'+ordem; if(MINI[k]) return MINI[k];
+  const k=id+'_'+ordem+'_'+(campeaoId()||''); if(MINI[k]) return MINI[k];
   const cv = id.startsWith('esp:') ? await desenharEspecial(id.slice(4)) : await desenharFundo(id, ordem);
   const m=document.createElement('canvas'); m.width=480; m.height=270;
   const x=m.getContext('2d'); x.imageSmoothingQuality='high'; x.drawImage(cv,0,0,480,270); return MINI[k]=m.toDataURL('image/jpeg',.82);
@@ -2072,7 +2155,8 @@ async function desenharObrigado(r){
   await carregarFontes();
   const S=1080, cv=document.createElement('canvas'); cv.width=S; cv.height=S; const ctx=cv.getContext('2d');
   const C=infoFase(r.fase), F=FASES[C.mundo-1], ceu=(C.tema&&C.tema.ceu)||F.ceu, v=r.fase-1;
-  const lista=POSES_DE[r.mascote], n=lista.length, pose=lista[v%n], flip=Math.floor(v/n)%2===1, perto=Math.floor(v/(2*n))%2===1;
+  const ACT=acessorioDe(C.tema), lista=POSES_DE[r.mascote].filter(ps=>!ACT || ancoraPose(ps, r.mascote)), n=lista.length; let pose=lista[v%n];
+  const flip=Math.floor(v/n)%2===1, perto=Math.floor(v/(2*n))%2===1 && !ACT;
   const c=CANDS.find(x=>x.id===r.mascote), nome=(NOME()||'').split(' ')[0];
   // fundo
   const g=ctx.createLinearGradient(0,0,0,S); g.addColorStop(0,'#071d63'); g.addColorStop(.6,'#1440b8'); g.addColorStop(1,'#0b2a86'); ctx.fillStyle=g; ctx.fillRect(0,0,S,S);
@@ -2087,11 +2171,27 @@ async function desenharObrigado(r){
   if(pose==='solo'){
     const fg=ctx.createLinearGradient(0,fy,0,fy+fh); fg.addColorStop(0,'#eaf1ff'); fg.addColorStop(1,'#bcd2ff'); ctx.fillStyle=fg; ctx.fillRect(fx,fy,fw,fh);
     const img=await recortado(IMG[r.mascote]); const hh=perto?fh*1.7:fh*.92, w=img.width*hh/img.height;
-    ctx.translate(fx+fw/2, 0); if(flip) ctx.scale(-1,1); ctx.imageSmoothingEnabled=true; ctx.drawImage(img, -w/2, perto?fy+24:fy+fh-hh-6, w, hh);
+    const top=perto?fy+24:fy+fh-hh-6, kk=hh/img.height; ctx.translate(fx+fw/2, 0); if(flip) ctx.scale(-1,1); ctx.imageSmoothingEnabled=true; ctx.drawImage(img, -w/2, top, w, hh);
+    const a=ancoraPose('solo', r.mascote), ac=acessorioDe(C.tema); if(ac && a) desenharAcessorio(ctx, ac, -w/2+a[0]*kk, top+a[1]*kk, a[2]*kk, a[3]);
   } else {
-    const img=await carregarImg(POSES[pose]), z=perto?1.35:1;
-    const k=Math.max(fw/img.width, fh/img.height)*z, vw=fw/k, vh=fh/k, sx=(img.width-vw)/2, sy=Math.max(0,Math.min(img.height-vh,(img.height-vh)*(pose==='est_meioca2'?.95:perto?.05:.2)));
-    ctx.translate(fx+fw/2, fy+fh/2); if(flip) ctx.scale(-1,1); ctx.imageSmoothingEnabled=true; ctx.drawImage(img, sx,sy,vw,vh, -fw/2,-fh/2,fw,fh);
+    const img=await carregarImg(POSES[pose]), an=ancoraPose(pose, r.mascote), retrato=img.width/img.height<1.1;
+    ctx.translate(fx+fw/2, fy+fh/2); if(flip) ctx.scale(-1,1); ctx.imageSmoothingEnabled=true;
+    if(retrato){
+      const bg=ctx.createLinearGradient(0,-fh/2,0,fh/2); bg.addColorStop(0,'#eaf1ff'); bg.addColorStop(1,'#bcd2ff'); ctx.fillStyle=bg; ctx.fillRect(-fw/2,-fh/2,fw,fh);
+      const kk=fh/img.height*(perto?1.3:(ACT&&an?.8:.98)), dw=img.width*kk, dh=img.height*kk, dx=-dw/2, dy=perto?-fh/2+8:fh/2-dh;
+      ctx.drawImage(img, dx, dy, dw, dh); if(ACT && an) desenharAcessorio(ctx, ACT, dx+an[0]*kk, dy+an[1]*kk, an[2]*kk, an[3]);
+    } else {
+      const z=perto?1.35:1, k=Math.max(fw/img.width, fh/img.height)*z, vw=fw/k, vh=fh/k, sx=(img.width-vw)/2;
+      let sy=Math.max(0,Math.min(img.height-vh,(img.height-vh)*(pose==='est_meioca2'?.95:perto?.05:.2))); if(ACT && an) sy=Math.max(0, Math.min(sy, an[1]-an[2]*1.1));
+      if(ACT && an && (an[1]-sy)*k < an[2]*k*.9){   // cabeça colada no topo: encolhe a foto para o chapéu caber
+        const bg=ctx.createLinearGradient(0,-fh/2,0,fh/2); bg.addColorStop(0,'#1d4fd6'); bg.addColorStop(1,'#0b2f7a'); ctx.fillStyle=bg; ctx.fillRect(-fw/2,-fh/2,fw,fh);
+        const k2=Math.min(fw/img.width,(fh-an[2]*.6)/img.height), dw=img.width*k2, dh=img.height*k2, dx=-dw/2, dy=fh/2-dh;
+        ctx.drawImage(img, dx, dy, dw, dh); desenharAcessorio(ctx, ACT, dx+an[0]*k2, dy+an[1]*k2, an[2]*k2, an[3]);
+      } else {
+        ctx.drawImage(img, sx,sy,vw,vh, -fw/2,-fh/2,fw,fh);
+        if(ACT && an) desenharAcessorio(ctx, ACT, (an[0]-sx)*k-fw/2, (an[1]-sy)*k-fh/2, an[2]*k, an[3]);
+      }
+    }
   }
   ctx.restore();
   ctx.strokeStyle='#ffffff'; ctx.lineWidth=10; ctx.beginPath(); ctx.roundRect ? ctx.roundRect(fx,fy,fw,fh,34) : ctx.rect(fx,fy,fw,fh); ctx.stroke();
@@ -2101,7 +2201,9 @@ async function desenharObrigado(r){
   // textos
   ctx.font='900 78px Archivo, sans-serif'; ctx.fillStyle='#ffffff'; ctx.shadowColor='rgba(0,0,0,.35)'; ctx.shadowOffsetY=4; ctx.shadowBlur=8;
   ctx.fillText(nome?`Obrigado, ${nome}!`:'Obrigado!', S/2, 140);
-  ctx.font='600 40px Archivo, sans-serif'; ctx.fillStyle='#ffd34d'; ctx.fillText(MSG_OBRIGADO[v%MSG_OBRIGADO.length], S/2, 200); ctx.shadowColor='transparent';
+  if(C.tema && C.tema.motiva){ ctx.font='600 30px Archivo, sans-serif'; ctx.fillStyle='#ffd34d'; const ln=[]; C.tema.motiva.split(' ').forEach(w=>{ const u=ln.length-1; if(u>=0 && ctx.measureText(ln[u]+' '+w).width<=900) ln[u]+=' '+w; else ln.push(w); }); ln.slice(0,2).forEach((l,i)=>ctx.fillText(l, S/2, 192+i*36)); }
+  else { ctx.font='600 40px Archivo, sans-serif'; ctx.fillStyle='#ffd34d'; ctx.fillText(MSG_OBRIGADO[v%MSG_OBRIGADO.length], S/2, 200); }
+  ctx.shadowColor='transparent';
   const rot = C.bonus ? `Fase bônus · ${dataBR(C.data)}` : `Fase ${C.mundo}-${C.dia} · ${dataBR(C.data)}`;
   ctx.font='700 32px Archivo, sans-serif'; ctx.fillStyle='#ffffff'; ctx.fillText(rot, S/2, C.tema?945:960);
   if(C.tema){ const lin=[]; C.tema.nome.split(' ').forEach(w=>{ const u=lin.length-1; if(u>=0 && (lin[u]+' '+w).length<=44) lin[u]+=' '+w; else lin.push(w); });
