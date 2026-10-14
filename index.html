@@ -1856,7 +1856,7 @@ MINI_IMPL.kart = {
       else { const x=FAIXAS[r()*3|0], e=IDS_ENTREGAS[r()*5|0]; for(let k=0;k<3;k++) S.segs[i+k*3].o.push(obj3d(e, x)); }
     }
     const ids=['novi','nova','elo','meioca'].filter(i=>i!==S.meu);
-    S.J={ x:0, v:0, volta:0, z:R3.PZ, giro:0, invul:0, fim:0 };
+    S.J={ x:0, v:0, volta:0, z:R3.PZ, giro:0, invul:0, fim:0, parede:0 };
     S.rivais=ids.map((id,k)=>({ id, z:R3.PZ+[700,350,-350][k], x:[-.45,.45,0][k], v:0, ritmo:[1.02,.99,.965][k]*(.985+r()*.03), volta:0, fim:0 }));
     S.desenharRival=(ctx, rv, X, Y, w)=>kartTraseira(ctx, X, Y, w, COR_MASCOTE[rv.id], S.sprites[rv.id]);
     S.vmax=7500;   // ~22% mais lento que a versão anterior (9600) para dar tempo de ler os nomes
@@ -1869,10 +1869,13 @@ MINI_IMPL.kart = {
   step(S,dt){
     const J=S.J, turbo=S.ativo>0, seg=S.segs[Math.floor(voltaZ(S,S.pos+R3.PZ)/R3.SEG)];
     if(!J.fim){
-      const fora=Math.abs(J.x)>1.05, vmax=S.vmax*(turbo?1.38:1)*(fora&&!turbo?.5:1)*(J.giro>0?.35:1);
+      const vmax=S.vmax*(turbo?1.38:1)*(J.giro>0?.35:1)*(J.parede>0?.8:1);
       J.v += (vmax-J.v)*Math.min(1,dt*(J.v<vmax?1.1:3));
       const pct=J.v/S.vmax, dir=(S.tecla.dir?1:0)-(S.tecla.esq?1:0);
-      J.x += dir*dt*2.3*Math.min(1,pct+.2); J.x -= dt*pct*seg.c*.62; J.x=Math.max(-1.5,Math.min(1.5,J.x)); J.incl=dir;
+      J.x += dir*dt*2.3*Math.min(1,pct+.2); J.x -= dt*pct*seg.c*.62; J.incl=dir;
+      // a zebra funciona como mureta: o kart não sai do asfalto; encostar nela custa um pouco de velocidade
+      const LIM=.82; if(Math.abs(J.x)>LIM){ J.x=Math.sign(J.x)*LIM; if(J.parede<=0) S.som('erro'); J.parede=.25; }
+      if(J.parede>0) J.parede-=dt;
     } else { J.v*=.985; }
     if(J.giro>0) J.giro-=dt; if(J.invul>0) J.invul-=dt;
     const zA=S.pos+R3.PZ; S.pos+=J.v*dt; J.z=S.pos+R3.PZ; const zB=J.z; S.bgX+=seg.c*J.v*dt*.0012;
@@ -1889,7 +1892,7 @@ MINI_IMPL.kart = {
       rv.v += (alvo-rv.v)*Math.min(1,dt*1.0); rv.z+=rv.v*dt;
       // desvia de vilões à frente
       const i=Math.floor(voltaZ(S,rv.z+600)/R3.SEG), ob=S.segs[i].o.find(o=>!o.ent && Math.abs(o.x-rv.x)<(o.wn+.35)/2);
-      if(ob) rv.alvoX = ob.x>0 ? -.55 : .55; rv.x += ((rv.alvoX??rv.x)-rv.x)*Math.min(1,dt*2);
+      if(ob) rv.alvoX = ob.x>0 ? -.55 : .55; rv.x += ((rv.alvoX??rv.x)-rv.x)*Math.min(1,dt*2); rv.x=Math.max(-.8,Math.min(.8,rv.x));
       if(Math.floor((rv.z-R3.PZ)/S.L)>=S.voltas && !rv.fim) rv.fim=S.tempo;
       // encostou no jogador
       const dz=voltaZ(S,rv.z)-voltaZ(S,J.z); if(Math.abs(dz)<160 && Math.abs(rv.x-J.x)<.32){ J.x += (J.x<rv.x?-1:1)*.12; if(dz>0) J.v*=.96; }
