@@ -498,6 +498,18 @@ body.emjogo main.wrap{max-width:none;padding:0}
 .treinos button{font-family:"Press Start 2P",monospace;font-size:10px;padding:10px 12px;border-radius:12px;background:#eef2fb;color:var(--navy)}
 .treinos button:disabled{opacity:.35}
 .days span.ok{background:var(--green);color:#fff}
+.albumtopo{display:flex;justify-content:space-between;align-items:center;margin:18px 0 10px}
+.albumtopo b{font-family:"Press Start 2P",monospace;font-size:11px;color:var(--navy)}
+.album{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.fig{background:#fff;border-radius:18px;box-shadow:var(--shadow);overflow:hidden;position:relative;border:3px solid #ffd34d;display:flex;flex-direction:column}
+.fig .num{position:absolute;top:6px;left:6px;z-index:2;background:#f47a1f;color:#fff;font-family:"Press Start 2P",monospace;font-size:10px;padding:5px 7px;border-radius:10px}
+.fig .pv{aspect-ratio:16/9;background:linear-gradient(135deg,#1d4fd6,#7fa2ff) center/cover;display:grid;place-items:center;font-size:26px}
+.fig .tx{padding:8px 10px 10px;display:grid;gap:4px}
+.fig .tx b{font-size:13px;line-height:1.2}.fig .tx small{font-size:11px;color:var(--muted);line-height:1.3}
+.fig .btn{padding:8px;font-size:13px;margin-top:4px}
+.fig.bloqueada,.fig.perdida{border-color:#e3e8f3;opacity:.8}.fig.bloqueada .pv,.fig.perdida .pv{filter:grayscale(.6)}
+.fig.pode{border-color:#2fa84f;animation:brilhaFig 1.2s infinite alternate}
+@keyframes brilhaFig{to{box-shadow:0 0 0 4px rgba(47,168,79,.25),var(--shadow)}}
 .obrigado{background:#fff;border-radius:22px;box-shadow:var(--shadow);padding:12px;margin-bottom:14px;display:grid;gap:10px}
 .obrigado canvas{width:100%;height:auto;border-radius:14px;display:block}
 .vencedor img.px{height:120px;width:auto;image-rendering:pixelated}
@@ -540,7 +552,7 @@ body.emjogo main.wrap{max-width:none;padding:0}
         <div class="r last"><span class="n">4</span><div><b>O mais escolhido vence</b><small>O mascote mais escolhido ao longo da corrida é o campeão. O resultado aparece na linha de chegada, em <span class="dataAbre"></span>.</small></div></div>
       </div>
     </div>
-    <button class="btn" style="width:100%;margin-top:16px" onclick="ir('fundos')">🖥️ Checkpoints · Fundos do Teams</button>
+    <button class="btn" style="width:100%;margin-top:16px" onclick="ir('fundos')">🎴 Álbum de figurinhas</button>
     <div class="demo" id="demoNote" hidden></div>
   </section>
 
@@ -638,9 +650,9 @@ body.emjogo main.wrap{max-width:none;padding:0}
 
   <!-- CHECKPOINTS · FUNDOS DO TEAMS -->
   <section class="scr" id="s-fundos">
-    <span class="kicker">Checkpoints · Fundos do Teams</span>
-    <h2>Fundos do Teams</h2>
-    <p class="lead">A corrida tem quatro etapas. Ao fim de cada uma, um novo fundo para as suas reuniões é liberado. O da largada já está aberto. Os fundos dos mascotes chegam do menos escolhido para o mais escolhido: o último, na linha de chegada, é o do campeão.</p>
+    <span class="kicker">Checkpoints · Álbum de figurinhas</span>
+    <h2>Álbum de figurinhas</h2>
+    <p class="lead">Cada figurinha vale um fundo para usar no mensageiro interno. Conquiste-a correndo e mostre ao seu supervisor para fazer a troca. As figurinhas dos checkpoints trazem os mascotes do menos escolhido para o mais escolhido: a última é a do campeão.</p>
     <svg width="0" height="0" style="position:absolute"><defs><linearGradient id="gradAnel"><stop offset="0" stop-color="#1d4fd6"/><stop offset="1" stop-color="#f47a1f"/></linearGradient></defs></svg>
     <div class="f2geral">
       <div class="anel"><svg viewBox="0 0 100 100" width="96" height="96"><circle class="bg" cx="50" cy="50" r="42"/><circle class="fg" id="anelFg" cx="50" cy="50" r="42" stroke-dasharray="264" stroke-dashoffset="264"/></svg><b id="f2Pct">0%</b></div>
@@ -652,18 +664,29 @@ body.emjogo main.wrap{max-width:none;padding:0}
       <button class="btn ghost" style="width:100%;margin-top:8px" id="simFimFundos"></button>
     </div>
     <div class="pilares" id="pilares"></div>
-    <div class="fundos" id="fundos"></div>
-    <h3 style="margin:22px 0 10px">★ Edições especiais</h3>
-    <div class="fundos" id="fundosEsp"></div>
+    <div class="albumtopo"><h3>🎴 Seu álbum</h3><b id="albumConta"></b></div>
+    <div class="album" id="album"></div>
     <div class="teamsdica">
-      <b>Como usar no Teams</b>
+      <b>Como trocar e usar o fundo</b>
       <ol>
-        <li>Toque em <b>Baixar fundo</b> e salve a imagem.</li>
+        <li>Toque em <b>Resgatar</b> e depois em <b>Baixar figurinha</b>.</li>
+        <li>Mostre a figurinha ao seu supervisor. Ele confere o código e envia o fundo para você.</li>
         <li>Numa reunião, abra <b>Efeitos de vídeo</b> (ou <b>Efeitos e avatares</b>) e vá em <b>Planos de fundo</b>.</li>
         <li>Toque em <b>Adicionar novo</b> e escolha a imagem baixada.</li>
       </ol>
     </div>
     <p class="note" id="f2Atualizado"></p>
+  </section>
+
+  <!-- SUPERVISOR (?supervisor) -->
+  <section class="scr admin" id="s-supervisor">
+    <span class="kicker">Área do supervisor</span>
+    <h2>Trocar figurinha por fundo</h2>
+    <p class="lead">Digite o PIN e o código que aparece na figurinha. Se ela for válida, você baixa o fundo para enviar a quem conquistou.</p>
+    <div class="linha"><label for="supPin">PIN do supervisor</label><input id="supPin" type="password" autocomplete="off" placeholder="PIN"></div>
+    <div class="linha"><label for="supCod">Código da figurinha</label><input id="supCod" autocomplete="off" placeholder="XXXX-XXXX" style="text-transform:uppercase"></div>
+    <div class="err" id="supErr"></div>
+    <div id="supRes" style="display:grid;gap:8px;margin-top:10px"></div>
   </section>
 
   <footer>Corrida dos Mascotes · jogo de integração da equipe<br>Participação voluntária. São registrados o nome informado, o mascote escolhido, a fase e a pontuação. O placar fica fechado até a linha de chegada.</footer>
@@ -1387,6 +1410,23 @@ const API = {
     if(h<=CONFIG.FIM) return [{mascote:'_total', escolhas:all.length, hoje:all.filter(v=>v.dia===h).length, pontos:all.reduce((a,v)=>a+v.pontos,0), aparelhos:aps}];
     return CANDS.map(c=>{ const l=all.filter(v=>v.mascote===c.id); return {mascote:c.id, escolhas:l.length, hoje:0, pontos:l.reduce((a,v)=>a+v.pontos,0), aparelhos:aps}; }).filter(r=>r.escolhas>0);
   },
+  async resgatar(fig){
+    if(SB){ const {data,error}=await SB.rpc('resgatar_figurinha',{p_aparelho:APARELHO,p_nome:NOME(),p_figurinha:fig}); if(error) throw error; return data; }
+    const all=LS.get('corrida_figs_demo',[]), ja=all.find(x=>x.figurinha===fig); if(ja) return {ok:true,codigo:ja.codigo,nova:false};
+    const f=FIGS.find(x=>x.id===fig); if(!f || figStatus(f)!=='pode') return {ok:false,erro:'requisito'};
+    const hx=()=>Math.floor(Math.random()*65536).toString(16).toUpperCase().padStart(4,'0'), codigo=hx()+'-'+hx();
+    all.push({figurinha:fig, codigo, nome:NOME(), criado_em:new Date().toISOString(), trocada_em:null}); LS.set('corrida_figs_demo',all); return {ok:true,codigo,nova:true};
+  },
+  async minhas(){
+    if(SB){ const {data,error}=await SB.rpc('minhas_figurinhas',{p_aparelho:APARELHO}); if(error) throw error; return data||[]; }
+    return LS.get('corrida_figs_demo',[]);
+  },
+  async conferir(pin, codigo, marcar){
+    if(SB){ const {data,error}=await SB.rpc('conferir_figurinha',{p_pin:pin,p_codigo:codigo,p_marcar:!!marcar}); if(error) throw error; return data; }
+    if(pin!=='teste') return {ok:false,erro:'pin'};
+    const all=LS.get('corrida_figs_demo',[]), f=all.find(x=>x.codigo===codigo); if(!f) return {ok:false,erro:'codigo'};
+    if(marcar && !f.trocada_em){ f.trocada_em=new Date().toISOString(); LS.set('corrida_figs_demo',all); } return {ok:true, ...f};
+  },
   async fundos(){
     if(SB){ const {data,error}=await SB.rpc('fundos_status'); if(error) throw error; return data||[]; }
     return LS.get('corrida_fundos_demo', [{ordem:1, fundo:'equipe'}]);
@@ -1450,6 +1490,7 @@ function configurarBarra(t){
   }
   if(t==='escolha'){ voltar='inicio'; }
   if(t==='nome'){ voltar='inicio'; label='Continuar ›'; acao=salvarNome; cor='orange'; }
+  if(t==='supervisor'){ label='Conferir figurinha'; acao=()=>conferirSupervisor(false); cor='orange'; }
   if(t==='resultado'){ label='Voltar ao início'; acao=()=>ir('inicio'); cor='ghost'; }
   if(t==='apuracao'||t==='fundos'){ label='Voltar ao início'; acao=()=>ir('inicio'); cor='ghost'; }
   back.hidden=!voltar; back.onclick=()=>ir(voltar);
@@ -1682,6 +1723,8 @@ function renderResultado(){
   else if(r && r.erro){ v.className='validade treino'; v.textContent = r.erro==='conexao' ? 'Não foi possível registrar agora (sem conexão). Tente correr de novo mais tarde.' : 'Não foi possível registrar esta corrida.'; }
   else if(r){ v.className='validade treino'; v.textContent = 'Sua corrida de hoje já estava registrada. Volte no próximo dia útil.'; }
   else v.className='validade treino', v.textContent='Corra a fase de hoje para registrar sua escolha.';
+  const dispF = typeof FIGS!=='undefined' ? FIGS.filter(f=>figStatus(f)==='pode').length : 0;
+  if(dispF && r) v.innerHTML += `<br><button class="btn orange" style="margin-top:8px;width:100%" onclick="ir('fundos')">🎴 ${dispF} figurinha${dispF>1?'s':''} para resgatar no álbum</button>`;
   const Cm = r && r.fase ? infoFase(r.fase) : null, mv=$('#rMotiva'); mv.hidden = !(Cm && Cm.tema && Cm.tema.motiva); if(!mv.hidden) mv.innerHTML=`★ <b>${esc(Cm.tema.nome)}</b><br>${esc(Cm.tema.motiva)}`;
   const prox = DIAS.find(d=>d>hojeISO()), proxB = CAL_BONUS.find(c=>c.data>hojeISO());
   $('#rAmanha').innerHTML = !prox && proxB && hojeISO()>=CONFIG.FIM
@@ -1823,9 +1866,10 @@ async function carregarFundos(){
   try{ const f=await API.fundos(); if(f && f.length) FUNDOS_LIB=f.slice().sort((a,b)=>a.ordem-b.ordem); }catch(e){ console.error(e); }
   if(hojeISO()>CONFIG.FIM && CAMPEAO_AP===undefined){ try{ const rows=(await API.apuracao()).filter(r=>r.mascote!=='_total').sort((a,b)=>b.escolhas-a.escolhas);
     CAMPEAO_AP = rows[0] && +rows[0].escolhas>0 && !(rows[1] && +rows[1].escolhas===+rows[0].escolhas) ? rows[0].mascote : null; }catch(e){ CAMPEAO_AP=null; } }
+  await carregarFigurinhas();
   renderF2Card(); if(tela==='fundos') renderFundos();
-  const vistos=+(LS.get('corrida_fundos_vistos',1)||1);
-  if(FUNDOS_LIB.length>vistos){ LS.set('corrida_fundos_vistos',FUNDOS_LIB.length); if(tela==='inicio'||tela==='fundos'){ confete(); toast('🔓 Novo fundo do Teams liberado!'); } }
+  const disp=FIGS.filter(f=>figStatus(f)==='pode').length, visto=+(LS.get('corrida_figs_avisadas',0)||0);
+  if(disp>visto && (tela==='inicio'||tela==='fundos')) toast(`🎴 ${disp} figurinha${disp>1?'s':''} para resgatar no álbum!`); LS.set('corrida_figs_avisadas',disp);
 }
 function textoEtapa(){
   const e=etapaAtual(); if(!e) return {titulo:'Linha de chegada', sub:'Todos os checkpoints foram cruzados.', pct:100};
@@ -1836,11 +1880,11 @@ function textoEtapa(){
 function renderF2Card(){
   const n=FUNDOS_LIB.length, t=textoEtapa();
   const html = `<button class="f2card" onclick="ir('fundos')">
-    <div class="k">CHECKPOINTS · FUNDOS DO TEAMS</div>
-    <h3>🖥️ ${esc(t.titulo)}</h3>
-    <p>${esc(t.sub)} <b>${n} de ${TOTAL_FUNDOS}</b> fundos liberados.</p>
+    <div class="k">ÁLBUM DE FIGURINHAS · ${esc(t.titulo.toUpperCase())}</div>
+    <h3>🎴 ${MINHAS_FIGS.length} de ${FIGS.length} figurinhas</h3>
+    <p>${esc(t.sub)} Cada figurinha vale um fundo para o mensageiro interno.${(()=>{ const d=FIGS.filter(f=>figStatus(f)==='pode').length; return d?` <b>${d} para resgatar!</b>`:''; })()}</p>
     <div class="mbar"><i style="width:${Math.min(100,t.pct)}%"></i></div>
-    <span class="go">Ver fundos →</span>
+    <span class="go">Abrir álbum →</span>
   </button>`;
   $$('[data-f2card]').forEach(el=>el.innerHTML=html);
 }
@@ -1862,22 +1906,14 @@ function renderFundos(){
   $('#f2Pct').textContent = Math.floor(t.pct)+'%';
   $('#anelFg').style.strokeDashoffset = 264*(1-Math.min(100,t.pct)/100);
   $('#f2Titulo').textContent = t.titulo;
-  $('#f2Sub').textContent = `${t.sub} ${n} de ${TOTAL_FUNDOS} fundos liberados.`;
+  $('#f2Sub').textContent = `${t.sub} ${MINHAS_FIGS.length} de ${FIGS.length} figurinhas no seu álbum.`;
   const atual=etapaAtual();
   $('#pilares').innerHTML = ETAPAS.map(e=>{ const feitas=fasesFeitas(e), done=hojeISO()>e.fim, now=atual&&atual.n===e.n, p=e.fases.length?feitas/e.fases.length*100:0;
     return `<div class="serie"><b>${done?'✅':now?'🏃':'🔒'} Etapa ${e.n} · ${esc(e.nome)}</b><span class="pc">${e.fases.length} fases</span>
       <div class="mbar"><i style="width:${done?100:p}%"></i></div>
       <small>${dataBR(e.ini)} a ${dataBR(e.fim)} · ${done?'etapa completa':now?`${feitas} de ${e.fases.length} fases corridas`:'ainda não começou'}</small></div>`; }).join('');
-  const slots=[...Array(TOTAL_FUNDOS)].map((_,i)=>slotFundo(i+1));
-  $('#fundos').innerHTML = slots.map(f=>`<div class="fundo ${f.ok?'':'lock'}">
-      <div class="pv"><div class="prev" data-prev="${f.ordem}"></div><span class="selo">${f.ordem}º</span>${f.ok?'':'<div class="cad">🔒</div>'}</div>
-      <div class="tx"><div><b>${esc(f.nome)}</b><small>${esc(f.desc)}</small></div>${f.ok?`<button class="btn" onclick="baixarFundo(${f.ordem})">Baixar fundo</button>`:''}</div>
-    </div>`).join('');
-  slots.forEach(async f=>{ const el=document.querySelector(`[data-prev="${f.ordem}"]`); if(!el) return;
-    if(!f.ok){ el.style.backgroundImage = f.ordem===TOTAL_FUNDOS ? 'linear-gradient(135deg,#0b2f7a,#f47a1f)' : 'linear-gradient(135deg,#1d4fd6,#7fa2ff)'; return; }
-    try{ el.style.backgroundImage=`url(${await miniatura(f.id, f.ordem)})`; }catch(e){ console.error(e); } });
   $('#f2Atualizado').textContent = '';
-  renderEspeciais();
+  renderAlbum();
 }
 
 /* ---------------- desenho dos fundos (1920×1080) ---------------- */
@@ -2219,6 +2255,121 @@ async function renderObrigado(r){
 }
 function baixarObrigado(){ if(OBRIGADO_CV){ baixarCanvas(OBRIGADO_CV,'obrigado-corrida-dos-mascotes.png'); toast('Imagem pronta! Veja nos seus downloads.'); } }
 
+/* =====================================================================
+   ÁLBUM DE FIGURINHAS — cada figurinha vale um fundo, trocado com o supervisor
+   ===================================================================== */
+const TXT_VALE = 'Essa figurinha vale um fundo para usar no mensageiro interno.';
+const FIGS = (()=>{
+  const l=[ {id:'largada', ordem:1, nome:'Largada', regra:'Corra a sua primeira fase.'} ];
+  ETAPAS.forEach((e,i)=>l.push({ id:i===ETAPAS.length-1?'campeao':'cp'+(i+1), ordem:i+2, etapa:e,
+    nome: i===ETAPAS.length-1 ? 'Campeão' : e.nome,
+    regra:`Corra ao menos 1 fase entre ${dataBR(e.ini)} e ${dataBR(e.fim)}. Fica disponível quando o ${i===ETAPAS.length-1?'campeão for revelado':'checkpoint for liberado'}.` }));
+  ESPECIAIS.forEach(E=>{ const datas=TEMAS.filter(t=>(t.idFundo||t.id)===E.id).map(t=>t.dia);
+    l.push({ id:E.id, tema:E.tema, especial:E, datas, nome:E.nome,
+      regra: E.tema.bonus ? `Corra a fase bônus a partir de ${dataBR(datas[0])}.` : `Corra a fase de ${dataBR(datas[0])}.` }); });
+  return l.map((f,i)=>({...f, n:i+1}));
+})();
+let MINHAS_FIGS = [];
+const figTenho = id => MINHAS_FIGS.find(x=>x.figurinha===id);
+function figStatus(f){
+  if(figTenho(f.id)) return 'tenho';
+  const hist=HIST(), datas=Object.keys(hist), h=hojeISO();
+  if(f.id==='largada') return datas.some(d=>!hist[d].bonus) ? 'pode' : 'bloqueada';
+  if(f.etapa){ const correu=datas.some(d=>!hist[d].bonus && d>=f.etapa.ini && d<=f.etapa.fim), lib=FUNDOS_LIB.some(x=>+x.ordem===f.ordem);
+    if(correu && lib) return 'pode'; if(!correu && h>f.etapa.fim) return 'perdida'; return 'bloqueada'; }
+  if(f.tema && f.tema.bonus) return datas.some(d=>hist[d].bonus && f.datas.includes(d)) || (h>=f.datas[0] && datas.some(d=>f.datas.includes(d))) ? 'pode' : (h>f.datas[f.datas.length-1] ? 'perdida' : 'bloqueada');
+  if(datas.some(d=>f.datas.includes(d))) return 'pode';
+  return h>f.datas[f.datas.length-1] ? 'perdida' : 'bloqueada';
+}
+async function carregarFigurinhas(){ try{ MINHAS_FIGS = await API.minhas() || []; }catch(e){ console.error(e); } }
+function fundoDaFig(f){   // [tipo, id, ordem] para desenhar o fundo que a figurinha vale
+  if(f.especial) return ['esp', f.id];
+  const lib=FUNDOS_LIB.find(x=>+x.ordem===f.ordem); return lib ? ['cp', lib.fundo, f.ordem] : null;
+}
+async function cvFundoDaFig(f){ const d=fundoDaFig(f); if(!d) return null; return d[0]==='esp' ? desenharEspecial(d[1]) : desenharFundo(d[1], d[2]); }
+function tituloFig(f){ const d=fundoDaFig(f); if(f.especial || !d || d[1]==='equipe') return f.nome; return `${f.nome} · ${CANDS.find(c=>c.id===d[1]).nome}`; }
+
+async function desenharFigurinha(f, reg){
+  await carregarFontes();
+  const W=1080, H=1660, cv=document.createElement('canvas'); cv.width=W; cv.height=H; const ctx=cv.getContext('2d'), PX='"Press Start 2P", monospace';
+  const rr=(x,y,w,h,r)=>{ ctx.beginPath(); ctx.roundRect ? ctx.roundRect(x,y,w,h,r) : ctx.rect(x,y,w,h); };
+  const borda=ctx.createLinearGradient(0,0,W,H); borda.addColorStop(0,'#ffd34d'); borda.addColorStop(.5,'#f47a1f'); borda.addColorStop(1,'#ffd34d');
+  ctx.fillStyle=borda; rr(0,0,W,H,60); ctx.fill();
+  const fundo=ctx.createLinearGradient(0,0,0,H); fundo.addColorStop(0,'#0b2f7a'); fundo.addColorStop(1,'#071d63'); ctx.fillStyle=fundo; rr(26,26,W-52,H-52,44); ctx.fill();
+  const rnd=mulberry32(f.n*97); for(let i=0;i<70;i++){ ctx.fillStyle=`rgba(127,170,255,${.05+rnd()*.12})`; const s=8+rnd()*10; ctx.fillRect(40+rnd()*(W-80), 40+rnd()*(H-80), s, s); }
+  ctx.textAlign='center'; ctx.font=`22px ${PX}`; ctx.fillStyle='#ffd34d'; ctx.fillText('CORRIDA DOS MASCOTES', W/2, 100);
+  ctx.fillStyle='#f47a1f'; rr(W/2-150,122,300,58,29); ctx.fill(); ctx.font=`24px ${PX}`; ctx.fillStyle='#fff'; ctx.fillText(`Nº ${String(f.n).padStart(2,'0')}/${FIGS.length}`, W/2, 162);
+  // o fundo que ela vale
+  const fx=60, fy=210, fw=W-120, fh=fw*9/16;
+  const cvF=await cvFundoDaFig(f); ctx.save(); rr(fx,fy,fw,fh,24); ctx.clip(); if(cvF){ ctx.imageSmoothingQuality='high'; ctx.drawImage(cvF,fx,fy,fw,fh); } ctx.restore();
+  ctx.strokeStyle='#fff'; ctx.lineWidth=8; rr(fx,fy,fw,fh,24); ctx.stroke();
+  let y=fy+fh+90;
+  ctx.font='900 62px Archivo, sans-serif'; ctx.fillStyle='#ffffff';
+  const quebra=(t,mw)=>{ const l=[]; t.split(' ').forEach(w=>{ const u=l.length-1; if(u>=0 && ctx.measureText(l[u]+' '+w).width<=mw) l[u]+=' '+w; else l.push(w); }); return l; };
+  quebra(tituloFig(f), W-160).slice(0,2).forEach(l=>{ ctx.fillText(l, W/2, y); y+=70; });
+  y+=10; ctx.font='700 40px Archivo, sans-serif'; ctx.fillStyle='#ffd34d'; quebra(TXT_VALE, W-200).forEach(l=>{ ctx.fillText(l, W/2, y); y+=50; });
+  y+=6; ctx.font='600 32px Archivo, sans-serif'; ctx.fillStyle='#cfe0ff'; ctx.fillText('Apresente ao seu supervisor para fazer a troca.', W/2, y); y+=60;
+  // dados do jogador
+  ctx.fillStyle='rgba(255,255,255,.1)'; rr(90,y,W-180,230,28); ctx.fill(); ctx.strokeStyle='rgba(255,255,255,.4)'; ctx.lineWidth=3; rr(90,y,W-180,230,28); ctx.stroke();
+  ctx.font='600 30px Archivo, sans-serif'; ctx.fillStyle='#cfe0ff'; ctx.fillText('Corredor(a)', W/2, y+52);
+  ctx.font='900 46px Archivo, sans-serif'; ctx.fillStyle='#fff'; ctx.fillText((reg.nome||NOME()||'—').slice(0,32), W/2, y+108);
+  ctx.font=`34px ${PX}`; ctx.fillStyle='#ffd34d'; ctx.fillText(reg.codigo||'', W/2, y+172);
+  ctx.font='600 24px Archivo, sans-serif'; ctx.fillStyle='#cfe0ff'; ctx.fillText(`Código da figurinha · obtida em ${new Intl.DateTimeFormat('pt-BR',{timeZone:TZ}).format(new Date(reg.criado_em||Date.now()))}`, W/2, y+212);
+  // mascotes em pixel no rodapé
+  ctx.imageSmoothingEnabled=false; const ids=['elo','meioca','novi','nova'], k=3; let x=W/2-(ids.reduce((a,i)=>a+SPRITES[i].width*k,0)+3*40)/2;
+  ids.forEach(i=>{ const s=SPRITES[i]; ctx.drawImage(s, x, H-60-s.height*k, s.width*k, s.height*k); x+=s.width*k+40; });
+  ctx.textAlign='left'; return cv;
+}
+
+function renderAlbum(){
+  const box=$('#album'); if(!box) return;
+  const tem=FIGS.filter(f=>figTenho(f.id)).length;
+  $('#albumConta').textContent = `${tem} de ${FIGS.length} figurinhas`;
+  box.innerHTML = FIGS.map(f=>{ const st=figStatus(f);
+    const sub = st==='tenho' ? `Código ${figTenho(f.id).codigo}${figTenho(f.id).trocada_em?' · trocada ✓':''}` : st==='pode' ? 'Disponível para resgatar!' : st==='perdida' ? 'Esta figurinha não foi conquistada.' : f.regra;
+    const btn = st==='tenho' ? `<button class="btn" onclick="abrirFigurinha('${f.id}')">Ver figurinha</button>` : st==='pode' ? `<button class="btn orange" onclick="resgatarFigurinha('${f.id}')">Resgatar</button>` : '';
+    return `<div class="fig ${st}"><div class="num">${String(f.n).padStart(2,'0')}</div><div class="pv" data-fig="${f.id}">${st==='tenho'||st==='pode'?'':'<span>🔒</span>'}</div>
+      <div class="tx"><b>${esc(st==='tenho'?tituloFig(f):f.nome)}</b><small>${esc(sub)}</small>${btn}</div></div>`; }).join('');
+  FIGS.forEach(async f=>{ const st=figStatus(f); const el=document.querySelector(`[data-fig="${f.id}"]`); if(!el || !(st==='tenho'||st==='pode')) return;
+    const d=fundoDaFig(f); if(!d) return; try{ el.style.backgroundImage=`url(${await miniatura(d[0]==='esp'?'esp:'+d[1]:d[1], d[0]==='esp'?0:d[2])})`; }catch(e){} });
+}
+async function resgatarFigurinha(id){
+  const f=FIGS.find(x=>x.id===id); if(!f) return;
+  if(!NOME()) { toast('Informe seu nome antes de resgatar.'); return ir('nome'); }
+  try{ const r=await API.resgatar(id);
+    if(!r || !r.ok){ toast(r && r.erro==='requisito' ? 'Esta figurinha ainda não está disponível para você.' : 'Não foi possível resgatar agora.'); return; }
+    await carregarFigurinhas(); confete(); toast('🎴 Figurinha resgatada!'); renderAlbum(); renderF2Card(); abrirFigurinha(id);
+  }catch(e){ console.error(e); toast('Sem conexão. Tente de novo.'); }
+}
+let FIG_CV=null;
+async function abrirFigurinha(id){
+  const f=FIGS.find(x=>x.id===id), reg=figTenho(id); if(!f||!reg) return;
+  $('#premioBody').innerHTML=`<h3>🎴 Figurinha Nº ${String(f.n).padStart(2,'0')}</h3><p class="lead" style="margin:0 0 10px">${TXT_VALE} Mostre esta figurinha ao seu supervisor para receber o fundo.</p><div id="figPv" style="text-align:center;color:var(--muted)">Montando a figurinha…</div><button class="btn orange" style="width:100%;margin-top:10px" onclick="baixarFigurinha()">Baixar figurinha</button>`;
+  $('#premioModal').classList.add('on');
+  FIG_CV=await desenharFigurinha(f, reg); const im=new Image(); im.src=FIG_CV.toDataURL('image/jpeg',.85); im.style.cssText='width:100%;border-radius:16px'; const pv=$('#figPv'); pv.innerHTML=''; pv.appendChild(im);
+}
+function baixarFigurinha(){ if(FIG_CV){ baixarCanvas(FIG_CV,'figurinha-corrida-dos-mascotes.png'); toast('Figurinha pronta! Veja nos seus downloads.'); } }
+
+/* ---------- área do supervisor (?supervisor) ---------- */
+let SUP=null;
+async function conferirSupervisor(marcar=false){
+  const pin=$('#supPin').value.trim(), cod=$('#supCod').value.trim().toUpperCase(), out=$('#supRes'); $('#supErr').textContent='';
+  if(!pin || !cod) return $('#supErr').textContent='Informe o PIN e o código da figurinha.';
+  try{ const r=await API.conferir(pin, cod, marcar);
+    if(!r || !r.ok){ out.innerHTML=''; return $('#supErr').textContent = r && r.erro==='pin' ? 'PIN incorreto.' : 'Código não encontrado.'; }
+    SUP={...r, codigo:cod}; const f=FIGS.find(x=>x.id===r.figurinha);
+    out.innerHTML=`<div class="validade ok">✅ Figurinha válida<br><b>${esc(r.nome||'—')}</b> · Nº ${String(f.n).padStart(2,'0')} · ${esc(tituloFig(f))}<br><small>Obtida em ${new Intl.DateTimeFormat('pt-BR',{timeZone:TZ}).format(new Date(r.criado_em))}${r.trocada_em?` · trocada em ${new Intl.DateTimeFormat('pt-BR',{timeZone:TZ}).format(new Date(r.trocada_em))}`:''}</small></div>
+      <button class="btn orange" style="width:100%" onclick="baixarFundoSupervisor()">Baixar o fundo desta figurinha</button>
+      ${r.trocada_em?'':'<button class="btn" style="width:100%;margin-top:8px" onclick="conferirSupervisor(true)">Marcar como trocada</button>'}`;
+    if(marcar) toast('Troca registrada.');
+  }catch(e){ console.error(e); $('#supErr').textContent='Falha de conexão.'; }
+}
+async function baixarFundoSupervisor(){
+  if(!SUP) return; const f=FIGS.find(x=>x.id===SUP.figurinha), cv=await cvFundoDaFig(f);
+  if(!cv) return toast('O fundo desta figurinha ainda não foi definido.');
+  baixarCanvas(cv, `fundo-${f.id}.jpg`, 'image/jpeg', .92); toast('Fundo pronto para enviar.');
+}
+
 
 /* =====================================================================
    MODO SIMULAÇÃO (?simular)
@@ -2260,7 +2411,7 @@ function simLiberar(){
   fecharPremio(); toast('🔓 Fundo liberado'); carregarFundos().then(()=>{ if(tela!=='fundos') ir('fundos'); });
 }
 function simSair(){ SS.del('sim_on'); SS.del('sim_fim'); SS.del('sim_fase'); location.href=location.pathname; }
-function simLimpar(){ ['corrida_demo','corrida_fundos_demo','corrida_nome','corrida_hist','corrida_nivel_visto','corrida_ultimo_mascote'].forEach(k=>{ try{ localStorage.removeItem(k); }catch(e){} }); try{ sessionStorage.clear(); }catch(e){} location.hash=''; location.reload(); }
+function simLimpar(){ ['corrida_demo','corrida_fundos_demo','corrida_figs_demo','corrida_figs_avisadas','corrida_nome','corrida_hist','corrida_nivel_visto','corrida_ultimo_mascote'].forEach(k=>{ try{ localStorage.removeItem(k); }catch(e){} }); try{ sessionStorage.clear(); }catch(e){} location.hash=''; location.reload(); }
 
 /* =====================================================================
    INÍCIO DA APLICAÇÃO
@@ -2274,7 +2425,8 @@ function simLimpar(){ ['corrida_demo','corrida_fundos_demo','corrida_nome','corr
   setInterval(()=>{ if(['inicio','apuracao','fundos','resultado'].includes(tela)){ carregarParticipacao(); carregarFundos(); } }, 60000);
   countdown(); setInterval(()=>{ countdown(); if(tela==='apuracao') tickLacre(); },1000); tickLacre();
   let inicial='inicio';
-  if(/^#fundos/.test(location.hash)) inicial='fundos';
+  if(new URLSearchParams(location.search).has('supervisor')) inicial='supervisor';
+  else if(/^#fundos/.test(location.hash)) inicial='fundos';
   else if(/^#apuracao/.test(location.hash)) inicial='apuracao';
   else if(/^#resultado/.test(location.hash) && SIT.jogou_hoje) inicial='resultado';
   history.replaceState({t:inicial},'','#'+inicial); ir(inicial,{push:false});
