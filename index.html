@@ -528,6 +528,11 @@ body.sembarra{padding-bottom:24px!important}
 .mapabox .mtopo b{font-family:"Press Start 2P",monospace;font-size:10px;color:#fff;text-shadow:2px 2px 0 #0b1530;background:rgba(11,21,48,.55);padding:6px 8px;border-radius:10px}
 .legenda{display:flex;flex-wrap:wrap;gap:6px 12px;padding:10px 12px;background:#fff;font-size:12px;color:var(--muted);font-weight:700}
 .legenda span{display:inline-flex;align-items:center;gap:4px}
+.objs{display:grid;grid-template-columns:repeat(auto-fill,minmax(130px,1fr));gap:6px;margin-top:8px}
+.objs div{display:flex;align-items:center;gap:8px;border-radius:12px;padding:6px 8px;font-size:12px;font-weight:800;line-height:1.2}
+.objs div img{width:32px;height:32px;object-fit:contain;image-rendering:pixelated;flex:none}
+#objsVil div{background:#fdecec;color:#8e1b1b}#objsEnt div{background:#e3f6ea;color:#1b6b38}
+.objs b{grid-column:1/-1;font-size:11px;letter-spacing:.06em}
 .modotag{display:inline-block;margin-top:6px;background:#7a2cbf;color:#fff;font-size:12px;font-weight:800;padding:4px 10px;border-radius:99px}
 
 /* controles dos mini-jogos */
@@ -571,13 +576,16 @@ body.sembarra{padding-bottom:24px!important}
       <div class="mtopo"><b>MAPA DA CORRIDA</b><b id="mapaEtapa"></b></div>
       <div class="legenda"><span>🟡 fase jogada</span><span>⭐ data especial</span><span><i style="color:#e84a4a">G</i>·<i style="color:#1d4fd6">A</i>·<i style="color:#2fa84f">C</i>·<i style="color:#7a2cbf">L</i> Grande Prêmio, Arquivo, Conferência, Labirinto</span><span>🚩 checkpoint</span><span>🏰 Castelo da Novação</span></div>
     </div>
+    <div class="card" style="margin-top:16px" id="pistaCard"><h3>Na pista</h3>
+      <p class="lead" style="margin:0 0 8px;font-size:14px">Desvie dos vilões e recolha as entregas. Elas carregam o poder do seu mascote.</p>
+      <div class="objs" id="objsVil"></div><div class="objs" id="objsEnt"></div></div>
     <div class="ola" id="olaBox" hidden></div>
     <div data-f2card></div>
     <div class="card" style="margin-top:16px">
       <h3>Como funciona</h3>
       <div class="road">
         <div class="r"><span class="n">1</span><div><b>Escolha seu mascote</b><small>Cada um tem um poder próprio. A sua escolha do dia soma um ponto para ele.</small></div></div>
-        <div class="r"><span class="n">2</span><div><b>Jogue a fase do dia</b><small>Na corrida, toque para pular e segure para ir mais alto. A cada três corridas aparece uma modalidade nova: Grande Prêmio, Arquivo, Conferência ou Labirinto.</small></div></div>
+        <div class="r"><span class="n">2</span><div><b>Jogue a fase do dia</b><small>Desvie dos vilões e pegue as entregas. Há corridas em 3D (troque de faixa e pule) e corridas laterais (toque para pular). A cada três corridas aparece uma modalidade nova: Grande Prêmio, Arquivo, Conferência ou Labirinto.</small></div></div>
         <div class="r"><span class="n">3</span><div><b>Uma fase por dia</b><small>Cada celular joga uma vez por dia útil. O caminho passa por sete etapas até o Castelo da Novação.</small></div></div>
         <div class="r last"><span class="n">4</span><div><b>O mais escolhido vence</b><small>O mascote mais escolhido ao longo da corrida é o campeão. O resultado aparece na linha de chegada, em <span class="dataAbre"></span>.</small></div></div>
       </div>
@@ -635,7 +643,7 @@ body.sembarra{padding-bottom:24px!important}
     </div>
     <div class="stats">
       <div class="stat"><b id="rPontos">0</b><small>Pontos</small></div>
-      <div class="stat"><b id="rProc">0</b><small id="rProcL">Pastas</small></div>
+      <div class="stat"><b id="rProc">0</b><small id="rProcL">Entregas</small></div>
       <div class="stat"><b id="rTempo">0s</b><small>Tempo</small></div>
       <div class="stat"><b id="rTrop">0</b><small>Tropeços</small></div>
     </div>
@@ -773,7 +781,7 @@ const CONFIG = {
     {nome:'Apuração',           fim:'2026-12-03'},
     {nome:'Certificação',       fim:'2026-12-11'},
   ],
-  // mini-jogos: a cada 3 fases de corrida, a 4ª é uma modalidade diferente (sorteio equilibrado: 3 de cada)
+  // a cada 3 fases de corrida (2 em 3D e 1 lateral), a 4ª é uma modalidade diferente (sorteio equilibrado: 3 de cada)
   MINIJOGOS: ['kart','bubble','bubble','pacman','bubble','kart','pacman','pacman','tetris','kart','tetris','tetris'],
 };
 /* ===================================================================== */
@@ -969,7 +977,13 @@ function criarJogo(canvas, op){
   const IDS=['novi','nova','elo','meioca'], meu=op.mascote;
   const SPR=op.sprites;                                   // {id: HTMLImageElement}
   const IT={}; for(const k in PIX) IT[k]=pixCanvas(PIX[k]);
-  if(TEMA && typeof PIX_TEMA!=='undefined' && PIX_TEMA[TEMA.item]) IT.processo=pixCanvas(PIX_TEMA[TEMA.item]);
+  const ITEMA = TEMA && typeof PIX_TEMA!=='undefined' && PIX_TEMA[TEMA.item] ? pixCanvas(PIX_TEMA[TEMA.item]) : null;
+  // vilões: papel → Pendência Documental, caixa → Demarcação de Contratos, pilha alta → RI de Auditoria,
+  // carimbo (sobe e desce) → Custos, relógio (no ar) → Inadimplência
+  const VIL_DE = { papel:'pendencia', caixa:'demarcacao', carimbo:'custos', relogio:'inadimplencia' };
+  if(typeof imgObjeto==='function'){ for(const k in VIL_DE) IT[k]=imgObjeto(VIL_DE[k],1); IT.ri=imgObjeto('ri',1); IDS_ENTREGAS.forEach(e=>IT[e]=imgObjeto(e,1)); }
+  const entregaDe = i => (ITEMA && i%3===2) ? null : (typeof IDS_ENTREGAS!=='undefined' ? IDS_ENTREGAS[i%5] : null);
+  const textos=[];
   const VBASE=118*F.vel, G=980, VPULO=-338, LIMITE=90;
   const rnd=mulberry32(Date.now()&0xffff);
 
@@ -978,7 +992,7 @@ function criarJogo(canvas, op){
             moedas:0, tropecos:0, fim:null, anim:0 };
   // rivais
   const RIV=IDS.filter(i=>i!==meu).map((id,k)=>({ id, x:40-14*(k+1), y:CHAO, vy:0, ritmo:[1.035,.995,.965][k]*(0.985+rnd()*.03), fim:null, anim:rnd()*6 }));
-  let t=0, estado='contagem', cont=3.2, cam=0, ultimo=0, raf=0, pausado=false, particulas=[], moedasVivas=NIVEL.moedas.map(m=>({...m, ok:false}));
+  let t=0, estado='contagem', cont=3.2, cam=0, ultimo=0, raf=0, pausado=false, particulas=[], moedasVivas=NIVEL.moedas.map((m,i)=>({...m, ok:false, e:entregaDe(i)}));
   let tempoTotal=0;
 
   /* ---------- som ---------- */
@@ -1068,17 +1082,17 @@ function criarJogo(canvas, op){
       else if(J.y>=CHAO && !noBuraco(J.x) && J.caindo<=0){ if(!J.chao && J.vy>60) poeira(J.x+10,CHAO,4); J.y=CHAO; J.vy=0; J.chao=true; J.pulosAr=0; }
       else { J.chao=false; }
       // caiu no buraco
-      if(J.y>CHAO+6 && J.caindo<=0){ J.caindo=.55; som('tropeco'); J.tropecos++; }
+      if(J.y>CHAO+6 && J.caindo<=0){ J.caindo=.55; som('tropeco'); J.tropecos++; typeof textoFlutuante==='function' && textoFlutuante(textos, J.x+12, CHAO-60, 'PENDÊNCIA DOCUMENTAL', '#ff8a8a'); }
       if(J.caindo>0){ J.caindo-=dt; J.x=xAnt+vx*dt*.15; if(J.caindo<=0){ const b=NIVEL.buracos.find(b=>J.x+24>b.x && J.x<b.x+b.w); if(b) J.x=b.x+b.w+4; J.y=CHAO-40; J.vy=0; J.invul=1.4; } }
       // obstáculos
       if(!invencivel() && J.caindo<=0){
         const cj=caixaJogador();
-        for(const o of NIVEL.obs){ if(o.x<J.x-30 || o.x>J.x+40) continue; if(toca(cj, caixaObst(o,t))){ J.tropeco=.75; J.invul=1.3; J.tropecos++; som('tropeco'); brilho(J.x+16,J.y-26,'#ffffff',8); break; } }
+        for(const o of NIVEL.obs){ if(o.x<J.x-30 || o.x>J.x+40) continue; if(toca(cj, caixaObst(o,t))){ J.tropeco=.75; J.invul=1.3; J.tropecos++; som('tropeco'); brilho(J.x+16,J.y-26,'#ffffff',8); typeof VILOES!=='undefined' && textoFlutuante(textos, J.x+12, J.y-40, VILOES[o.alto?'ri':VIL_DE[o.t]].curto, '#ff8a8a'); break; } }
       }
       // processos
       const cj=caixaJogador();
       for(const m of moedasVivas){ if(m.ok || m.x<J.x-20 || m.x>J.x+40) continue;
-        if(toca(cj,{x:m.x,y:m.y,w:12,h:11})){ m.ok=true; J.moedas++; if(META && J.moedas===META){ som('poder'); brilho(J.x+12,J.y-30,'#2fa84f',16); } if(J.ativo<=0) J.poder=Math.min(META_PODER,J.poder+1); som('moeda'); brilho(m.x+6,m.y+5,'#ffd34d',5); } }
+        if(toca(cj,{x:m.x,y:m.y,w:12,h:11})){ m.ok=true; J.moedas++; if(META && J.moedas===META){ som('poder'); brilho(J.x+12,J.y-30,'#2fa84f',16); } if(J.ativo<=0) J.poder=Math.min(META_PODER,J.poder+1); som('moeda'); brilho(m.x+6,m.y+5,'#ffd34d',5); if(m.e && typeof ENTREGAS!=='undefined') textoFlutuante(textos, m.x+6, m.y-6, '+ '+ENTREGAS[m.e].curto, '#8affb0'); } }
       // chegada
       if(J.x>=L){ J.fim=tempoTotal; som('chegada'); confeteChegada(); }
     } else { J.x+=VBASE*.5*dt; J.anim+=dt*4; }
@@ -1181,11 +1195,11 @@ function criarJogo(canvas, op){
     }
   }
   function itens(){
-    for(const m of moedasVivas){ if(m.ok) continue; const x=m.x-cam; if(x<-14||x>JG_W) continue; const by=Math.round(Math.sin(t*5+m.x)*1.5); ctx.drawImage(IT.processo, x|0, (m.y+by)|0); }
+    for(const m of moedasVivas){ if(m.ok) continue; const x=m.x-cam; if(x<-14||x>JG_W) continue; const by=Math.round(Math.sin(t*5+m.x)*1.5); const im=m.e&&IT[m.e] || ITEMA || IT.processo; ctx.drawImage(im, x|0, (m.y+by-1)|0, 12, Math.round(12*im.height/im.width)); }
     for(const o of NIVEL.obs){ const x=o.x-cam; if(x<-24||x>JG_W+4) continue;
       if(o.t==='carimbo'){ const c=caixaObst(o,t); ctx.fillStyle='rgba(0,0,0,.2)'; ctx.fillRect(x|0,CHAO-2,14,2); ctx.drawImage(IT.carimbo, x|0, (CHAO-12-c.sub)|0); }
       else if(o.t==='relogio'){ const c=caixaObst(o,t); ctx.drawImage(IT.relogio, x|0, c.yy|0); }
-      else { const img=IT[o.t]; ctx.drawImage(img, x|0, CHAO-img.height); if(o.alto) ctx.drawImage(img, (x+1)|0, CHAO-img.height-10, img.width-2, 10); }
+      else { const img=IT[o.t]; if(o.alto && IT.ri){ const w=img.width+2, h=img.height+10; ctx.drawImage(IT.ri, (x-1)|0, CHAO-h, w, h); } else ctx.drawImage(img, x|0, CHAO-img.height); }
     }
     // linha de chegada
     const fx=L-cam; if(fx>-20 && fx<JG_W+20){ for(let y=CHAO-80;y<CHAO;y+=6){ ctx.fillStyle=((y/6|0)%2)?'#111':'#fff'; ctx.fillRect(fx|0,y,6,6); ctx.fillStyle=((y/6|0)%2)?'#fff':'#111'; ctx.fillRect((fx+6)|0,y,6,6); }
@@ -1224,11 +1238,13 @@ function criarJogo(canvas, op){
     if(!(J.caindo>0 && J.y>CHAO+30)){ const s=SPR[meu], ax=Math.round(J.x-cam+s.width/2), ay=Math.round(Math.min(J.y,CHAO)-s.height-9+(Math.floor(t*3)%2));
       ctx.fillStyle='#f47a1f'; ctx.fillRect(ax-3,ay,7,2); ctx.fillRect(ax-2,ay+2,5,1); ctx.fillRect(ax-1,ay+3,3,1); ctx.fillRect(ax,ay+4,1,1); }
     for(const p of particulas){ ctx.fillStyle=p.cor; ctx.fillRect((p.x-cam)|0, p.y|0, p.s, p.s); }
+    if(typeof desenharTextos==='function') desenharTextos(ctx, textos, 1/60, cam);
     if(estado==='contagem'){ ctx.fillStyle='rgba(11,47,122,.55)'; ctx.fillRect(0,0,JG_W,JG_H);
-      ctx.fillStyle='#fff'; ctx.textAlign='center'; ctx.font='8px "Press Start 2P", monospace'; ctx.fillText(TEMA ? (TEMA.bonus?'FASE BÔNUS':`MUNDO ${MUNDO}-${DIA}`) : `MUNDO ${MUNDO}-${DIA} · ${F.nome.toUpperCase()}`, JG_W/2, 62);
-      if(TEMA){ const lin=[]; TEMA.nome.toUpperCase().split(' ').forEach(w=>{ const u=lin.length-1; if(u>=0 && (lin[u]+' '+w).length<=40) lin[u]+=' '+w; else lin.push(w); }); ctx.font='7px "Press Start 2P", monospace'; ctx.fillStyle='#ffffff'; lin.forEach((l,i)=>ctx.fillText(l, JG_W/2, 50-lin.length*10+i*10+8)); ctx.font='8px "Press Start 2P", monospace'; } if(META){ ctx.fillStyle='#ffd34d'; ctx.fillText(`DESAFIO: ${META} ${TEMA?"ITENS":"PASTAS"}`, JG_W/2, 82); }
+      ctx.fillStyle='#fff'; ctx.textAlign='center'; ctx.font='8px "Press Start 2P", monospace'; ctx.fillText(op.rotulo || (TEMA ? (TEMA.bonus?'FASE BÔNUS':`MUNDO ${MUNDO}-${DIA}`) : `MUNDO ${MUNDO}-${DIA} · ${F.nome.toUpperCase()}`), JG_W/2, 62);
+      if(TEMA){ const lin=[]; TEMA.nome.toUpperCase().split(' ').forEach(w=>{ const u=lin.length-1; if(u>=0 && (lin[u]+' '+w).length<=40) lin[u]+=' '+w; else lin.push(w); }); ctx.font='7px "Press Start 2P", monospace'; ctx.fillStyle='#ffffff'; lin.forEach((l,i)=>ctx.fillText(l, JG_W/2, 50-lin.length*10+i*10+8)); ctx.font='8px "Press Start 2P", monospace'; } if(META){ ctx.fillStyle='#ffd34d'; ctx.fillText(`DESAFIO: ${META} ENTREGAS`, JG_W/2, 82); }
       ctx.fillStyle='#ffd34d'; ctx.font='32px "Press Start 2P", monospace'; ctx.fillText(Math.ceil(cont)>0?String(Math.ceil(cont)):'JÁ!', JG_W/2, 130);
-      ctx.fillStyle='#fff'; ctx.font='8px "Press Start 2P", monospace'; ctx.fillText('TOQUE PARA PULAR', JG_W/2, 170); ctx.textAlign='left'; }
+      ctx.fillStyle='#fff'; ctx.font='8px "Press Start 2P", monospace'; ctx.fillText('TOQUE PARA PULAR', JG_W/2, 156); ctx.textAlign='left';
+      if(typeof legendaObjetos==='function') legendaObjetos(ctx, 176); }
     }
 
   /* ---------- laço ---------- */
@@ -1372,29 +1388,99 @@ function desenharAcessorio(ctx, tipo, x, y, w, ang=0, espelho=false){
 }
 
 /* =====================================================================
+   VILÕES (desviar) e ENTREGAS (recolher) — usados em todas as fases
+   ===================================================================== */
+const VILOES = {
+  pendencia:    { nome:'Pendência Documental',     curto:'PENDÊNCIA DOCUMENTAL', pal:{k:'#1b1b2a',w:'#ffffff',g:'#cfd6e6',r:'#d93838'}, img:[
+    'kkkkkkkkkk....','kwwwwwwwwkk...','kwwwwwwwwkgk..','kwwwwwwwwkkkk.','kwkkwwwwkkwwk.','kwwwkwwkwwwwk.',
+    'kwkkwwwwkkwwk.','kwwwwwwwwwwwk.','kwwwwrrwwwwwk.','kwwwwrrwwwwwk.','kwwwwrrwwwwwk.','kwwwwwwwwwwwk.','kwwwwrrwwwwwk.','kwwwwwwwwwwwk.','kkkkkkkkkkkkk.'] },
+  inadimplencia:{ nome:'Inadimplência',            curto:'INADIMPLÊNCIA', pal:{r:'#c62828',R:'#8e1b1b',w:'#ffeaea',k:'#1b1b2a'}, img:[
+    'RRRRRRRRRRRRRR','RwwwwwwwwwwwwR','RwkwkkwkwkkwwR','RwkwkkwkwkkwwR','RwkwkkwkwkkwwR','RwwwwwwwwwwwwR',
+    'RwkkwwwwwwkkwR','RwwwkwwwwkwwwR','RwwwwwwwwwwwwR','RwwwwkkkkwwwwR','RwwwkwwwwkwwwR','RwwwwwwwwwwwwR','RrrrrrrrrrrrrR','RRRRRRRRRRRRRR'] },
+  custos:       { nome:'Custos',                   curto:'CUSTOS', pal:{k:'#1b1b2a',s:'#5b4636',S:'#3e2f24',y:'#ffd34d',r:'#d93838'}, img:[
+    '.....kkkk.....','......yy......','....kkkkkk....','...kssssssk...','..ksssyyssssk.','.kssyyyyyyssk.',
+    '.kssyyssssssk.','.ksssyyyysssk.','.ksssssyysssk.','.kssyyyyyyssk.','.ksssssyysssk.','..kSSSSSSSSk..','...kkkkkkkk...'] },
+  demarcacao:   { nome:'Demarcação de Contratos',  curto:'DEMARCAÇÃO DE CONTRATOS', pal:{o:'#f47a1f',O:'#c45a0c',w:'#ffffff',k:'#1b1b2a'}, img:[
+    '......oo......','.....oooo.....','.....wwww.....','....oooooo....','....oOoooo....','...wwwwwwww...',
+    '...oooooooo...','..oOoooooooo..','..wwwwwwwwww..','.oooooooooooo.','.oOoooooooooo.','kkkkkkkkkkkkkk'] },
+  ri:           { nome:'RI de Auditoria',          curto:'RI DE AUDITORIA', pal:{k:'#1b1b2a',r:'#d93838',w:'#ffffff',g:'#8a8f9e'}, img:[
+    'kkkkkkkkkkkkkkkkkkkkkk','krrwwrrwwrrwwrrwwrrwwk','krrwwrrwwrrwwrrwwrrwwk','kkkkkkkkkkkkkkkkkkkkkk',
+    'kwwwwwwwwwwwwwwwwwwwwk','kwwrrrwwwrrrwwwwwwwwwk','kwwrwwrwwwrwwwwwwwwwwk','kwwrrrwwwwrwwwwwwwwwwk','kwwrwrwwwwrwwwwwwwwwwk','kwwrwwrwwrrrwwwwwwwwwk',
+    'kwwwwwwwwwwwwwwwwwwwwk','kkkkkkkkkkkkkkkkkkkkkk','.kg................gk.','.kg................gk.','.kg................gk.','kkkk..............kkkk'] },
+};
+const ENTREGAS = {
+  analise:   { nome:'Análise Finalizada',     curto:'ANÁLISE FINALIZADA', pal:{k:'#1b1b2a',b:'#bfe3ff',w:'#ffffff',g:'#2fa84f',m:'#7a4a20'}, img:[
+    '...kkkkk......','..kbbbbbk.....','.kbwbbbbbk....','.kbbbbbbgk....','.kbbbbbggk....','.kbgbbggbk....',
+    '.kbbggbbbk....','..kbbbbbk.....','...kkkkkmm....','........mmm...','.........mmm..','..........mm..'] },
+  mapeamento:{ nome:'Mapeamento Finalizado',  curto:'MAPEAMENTO FINALIZADO', pal:{k:'#1b1b2a',a:'#ffe7a6',b:'#9fd88a',r:'#d93838',g:'#2fa84f',w:'#ffffff'}, img:[
+    'kkkkkkkkkkkkkk','kaabbbaabbbaak','kaabrbaabbbaak','kabrbbarbbbaak','karbbbaabrbaak','kaabbbaabbrrak',
+    'kaabbbaabbbark','kaabbbaaggggak','kkkkkkkggwwggk','.......gwwgwgg','.......ggwgggg','........gggg..'] },
+  pa:        { nome:'PA',                     curto:'PA', pal:{k:'#1b1b2a',b:'#1d4fd6',B:'#7fa2ff',w:'#ffffff'}, img:[
+    'kkkkkkkkkkk...','kbbbbbbbbbkk..','kbbbbbbbbbkBk.','kbbbbbbbbbkkkk','kbwwwbbbwwbbbk','kbwbwbbwbbwbbk',
+    'kbwwwbbwwwwbbk','kbwbbbbwbbwbbk','kbwbbbbwbbwbbk','kbbbbbbbbbbbbk','kkkkkkkkkkkkkk'] },
+  auditoria: { nome:'Auditoria',              curto:'AUDITORIA ✓', pal:{g:'#2fa84f',G:'#1f7a38',w:'#ffffff'}, img:[
+    '....GGGGGG....','..GGggggggGG..','.GggggggggwwG.','.Gggggggggwwg.','GgggggggggwwgG','GggwwgggwwwggG',
+    'GgggwwgwwwgggG','GggggwwwwggggG','GgggggwwgggggG','.Gggggggggggg.','.GGgggggggggG.','..GGggggggGG..','....GGGGGG....'] },
+  novado:    { nome:'NOVADO',                 curto:'NOVADO!', pal:{y:'#ffd34d',Y:'#c9902a',w:'#ffffff',r:'#d93838',R:'#a82424'}, img:[
+    '....YYYYYY....','..YYyyyyyyYY..','.YyyyyywyyyyY.','.Yyyyywwwyyyy.','YyywwwwwwwwyyY','YyyywwwwwwyyyY',
+    'YyyyywwwwyyyyY','YyyyywyywyyyyY','.Yyywyyyywyyy.','.YyyyyyyyyyyY.','..YYyyyyyyYY..','...rRYYYYRr...','...rr....rr...','..rr......rr..'] },
+};
+const IDS_VILOES = Object.keys(VILOES), IDS_ENTREGAS = Object.keys(ENTREGAS);
+const _CACHE_OBJ = {};
+function imgObjeto(id, e=1){ const k=id+'@'+e; if(_CACHE_OBJ[k]) return _CACHE_OBJ[k]; const d=VILOES[id]||ENTREGAS[id]; return _CACHE_OBJ[k]=pixCanvas(d, e); }
+// ícone mínimo 7×7 (dentro das bolhas)
+const GLIFO_VILAO = {
+  pendencia:   ['.wwww..','.wwwww.','.wwrww.','.wwrww.','.wwwww.','.wwrww.','.wwwww.'],
+  inadimplencia:['wwwwwww','wkwkwkw','wkwkwkw','wwwwwww','wkkkkkw','wwwwwww','.......'],
+  custos:      ['..ww...','.wwwww.','.ww....','.wwwww.','....ww.','.wwwww.','..ww...'],
+  demarcacao:  ['...w...','..www..','..www..','.wwwww.','.wwwww.','wwwwwww','.......'],
+};
+function glifo(id, cor='#ffffff'){ const k='g:'+id+cor; if(_CACHE_OBJ[k]) return _CACHE_OBJ[k]; return _CACHE_OBJ[k]=pixCanvas({pal:{w:cor,k:'rgba(0,0,0,.55)',r:'#d93838'}, img:GLIFO_VILAO[id]}); }
+// texto flutuante (vilão em vermelho, entrega em verde)
+function textoFlutuante(lista, x, y, txt, cor){ if(lista.length>=4) lista.shift(); while(lista.some(f=>Math.abs(f.y-y)<11 && f.v>.5)) y-=12; lista.push({x, y, txt, cor, v:1.3}); }
+function desenharTextos(ctx, lista, dt, camX=0){
+  ctx.save(); ctx.font='6px "Press Start 2P", monospace'; ctx.textAlign='center';
+  for(const f of lista){ f.v-=dt; f.y-=dt*18; const a=Math.max(0,Math.min(1,f.v*1.5)); ctx.globalAlpha=a;
+    const w=ctx.measureText(f.txt).width+8, x=Math.max(w/2+2, Math.min(JG_W-w/2-2, f.x-camX));
+    ctx.fillStyle='rgba(11,21,48,.8)'; ctx.fillRect(Math.round(x-w/2), Math.round(f.y-8), Math.round(w), 11); ctx.fillStyle=f.cor; ctx.fillText(f.txt, Math.round(x), Math.round(f.y)); }
+  ctx.restore(); for(let i=lista.length-1;i>=0;i--) if(lista[i].v<=0) lista.splice(i,1);
+}
+// legenda da contagem: o que desviar e o que pegar
+function legendaObjetos(ctx, y){
+  ctx.save(); ctx.font='6px "Press Start 2P", monospace'; ctx.textAlign='left';
+  const linha=(rot, ids, yy, cor)=>{ ctx.fillStyle=cor; ctx.fillText(rot, 30, yy+9); let x=96; ids.forEach(id=>{ const c=imgObjeto(id,1); const k=Math.min(1, 16/c.height); ctx.drawImage(c, x, yy+12-c.height*k, c.width*k, c.height*k); x+=c.width*k+12; }); };
+  ctx.fillStyle='rgba(11,21,48,.7)'; ctx.fillRect(22, y-4, JG_W-44, 46);
+  linha('DESVIE', IDS_VILOES, y, '#ff8a8a'); linha('PEGUE', IDS_ENTREGAS, y+22, '#8affb0');
+  ctx.restore();
+}
+
+/* =====================================================================
    MINI-JOGOS — Grande Prêmio (kart), Arquivo (blocos), Conferência (bolhas),
    Labirinto (pac). Mesma tela 320×240, mesmo HUD, mesmo resultado da corrida.
    ===================================================================== */
 const MODOS = {
-  kart:   { nome:'GRANDE PRÊMIO', titulo:'Grande Prêmio',  icone:'🏎️', dica:'3 voltas. ◀ ▶ para virar.',          meta:12, rotulo:'pastas',  limite:92 },
+  kart:   { nome:'GRANDE PRÊMIO', titulo:'Grande Prêmio',  icone:'🏎️', dica:'3 voltas. ◀ ▶ para desviar dos vilões.', meta:12, rotulo:'entregas', limite:92 },
+  pista:  { nome:'CORRIDA 3D',    titulo:'Corrida 3D',     icone:'🏃', dica:'◀ ▶ troca de faixa. PULAR passa por cima.', meta:null, rotulo:'entregas', limite:92 },
   tetris: { nome:'ARQUIVO',       titulo:'Arquivo',        icone:'🧱', dica:'Complete prateleiras. ⟳ gira a peça.', meta:5,  rotulo:'linhas',  limite:60 },
-  bubble: { nome:'CONFERÊNCIA',   titulo:'Conferência',    icone:'🫧', dica:'Junte 3 da mesma cor. Toque para mirar.', meta:40, rotulo:'bolhas', limite:60 },
-  pacman: { nome:'LABIRINTO',     titulo:'Labirinto',      icone:'🟡', dica:'Recolha as pastas e fuja dos relógios.', meta:80, rotulo:'pastas', limite:60 },
+  bubble: { nome:'CONFERÊNCIA',   titulo:'Conferência',    icone:'🫧', dica:'Junte 3 pendências iguais. Toque para mirar.', meta:40, rotulo:'pendências', limite:60 },
+  pacman: { nome:'LABIRINTO',     titulo:'Labirinto',      icone:'🟡', dica:'Recolha as entregas e fuja dos vilões.', meta:80, rotulo:'entregas', limite:60 },
 };
 const POS_PONTOS = [300,200,120,60];
 
 function criarMini(tipo, canvas, op){
   const ctx=canvas.getContext('2d'); canvas.width=JG_W; canvas.height=JG_H; ctx.imageSmoothingEnabled=false;
   const M=MINI_IMPL[tipo], MD=MODOS[tipo], TEMA=op.tema||null;
-  const S={ tipo, op, ctx, W:JG_W, H:JG_H, t:0, estado:'contagem', cont:3.2, tempo:0, limite:MD.limite, meta:MD.meta, moedas:0, poder:0, ativo:0, pontos:0, erros:0,
+  const S={ tipo, op, ctx, W:JG_W, H:JG_H, t:0, estado:'contagem', cont:3.2, tempo:0, limite:MD.limite, meta:MD.meta||op.meta||20, moedas:0, poder:0, ativo:0, pontos:0, erros:0,
     fim:false, completou:false, rnd:mulberry32(op.fase*131+7), part:[], meu:op.mascote, spr:op.sprites[op.mascote], sprites:op.sprites, tema:TEMA,
-    ceu:(TEMA&&TEMA.ceu)||FASES[(op.mundo||1)-1].ceu, tecla:{}, auto:!!op.auto };
+    ceu:(TEMA&&TEMA.ceu)||FASES[(op.mundo||1)-1].ceu, tecla:{}, auto:!!op.auto, textos:[] };
   let AC=null;
   S.som=function(tp){ if(op.mudo) return; try{ AC=AC||op.audioCtx||new (window.AudioContext||window.webkitAudioContext)(); if(AC.state==='suspended') AC.resume();
     const t0=AC.currentTime, o=(w,f,a,b,d,v=.06)=>{ const s=AC.createOscillator(); s.type=w; s.frequency.setValueAtTime(f,t0+a); if(b) s.frequency.exponentialRampToValueAtTime(b,t0+a+d); const g=AC.createGain(); g.gain.setValueAtTime(v,t0+a); g.gain.exponentialRampToValueAtTime(.001,t0+a+d); s.connect(g); g.connect(AC.destination); s.start(t0+a); s.stop(t0+a+d+.02); };
     if(tp==='moeda'){ o('square',988,0,0,.06,.05); o('square',1319,.06,0,.1,.05); } if(tp==='erro') o('sawtooth',220,0,70,.25,.07); if(tp==='poder') [523,659,784,1047].forEach((f,i)=>o('square',f,i*.06,0,.1,.05));
-    if(tp==='bip') o('square',660,0,0,.12,.06); if(tp==='ja') o('square',1320,0,0,.3,.07); if(tp==='linha') o('square',784,0,1568,.18,.06); if(tp==='fim') [784,988,1175,1568].forEach((f,i)=>o('square',f,i*.11,0,.2,.06)); }catch(e){} };
+    if(tp==='bip') o('square',660,0,0,.12,.06); if(tp==='pulo') o('square',260,0,620,.16,.06); if(tp==='ja') o('square',1320,0,0,.3,.07); if(tp==='linha') o('square',784,0,1568,.18,.06); if(tp==='fim') [784,988,1175,1568].forEach((f,i)=>o('square',f,i*.11,0,.2,.06)); }catch(e){} };
   S.brilho=(x,y,cor,q=8)=>{ for(let i=0;i<q;i++){ const a=S.rnd()*6.28, v=40+S.rnd()*60; S.part.push({x,y,vx:Math.cos(a)*v,vy:Math.sin(a)*v,v:.5,cor}); } };
+  S.entrega=(x,y)=>{ const id=IDS_ENTREGAS[(S.nEnt=(S.nEnt||0)+1)%5]; textoFlutuante(S.textos, x, y, '+ '+ENTREGAS[id].curto, '#8affb0'); };
+  S.vilao=(id,x,y)=>textoFlutuante(S.textos, x, y, VILOES[id].curto, '#ff8a8a');
   S.ganha=(n=1)=>{ S.moedas+=n; if(S.ativo<=0) S.poder=Math.min(10,S.poder+n); if(S.moedas>=S.meta && S.moedas-n<S.meta){ S.som('poder'); } };
   M.init(S);
   let raf=0, ultimo=0, pausado=false, terminou=false;
@@ -1421,11 +1507,13 @@ function criarMini(tipo, canvas, op){
   function desenhar(){
     ctx.imageSmoothingEnabled=false; M.draw(S,ctx);
     for(const p of S.part){ ctx.fillStyle=p.cor; ctx.fillRect(p.x|0,p.y|0,2,2); }
+    if(tipo!=='kart' && tipo!=='pista') desenharTextos(ctx, S.textos, 1/60);
     if(S.estado==='contagem'){ ctx.fillStyle='rgba(11,47,122,.62)'; ctx.fillRect(0,0,JG_W,JG_H); ctx.textAlign='center';
-      ctx.font='8px "Press Start 2P", monospace'; ctx.fillStyle='#ffd34d'; ctx.fillText(MD.nome, JG_W/2, 56);
-      ctx.fillStyle='#fff'; ctx.fillText(`DESAFIO: ${S.meta} ${MD.rotulo.toUpperCase()}`, JG_W/2, 76);
-      ctx.font='32px "Press Start 2P", monospace'; ctx.fillStyle='#ffd34d'; ctx.fillText(Math.ceil(S.cont)>0?String(Math.ceil(S.cont)):'JÁ!', JG_W/2, 130);
-      ctx.font='7px "Press Start 2P", monospace'; ctx.fillStyle='#fff'; ctx.fillText(MD.dica.toUpperCase(), JG_W/2, 168); ctx.textAlign='left'; }
+      ctx.font='8px "Press Start 2P", monospace'; ctx.fillStyle='#ffd34d'; ctx.fillText(MD.nome, JG_W/2, 40);
+      ctx.fillStyle='#fff'; ctx.fillText(`DESAFIO: ${S.meta} ${MD.rotulo.toUpperCase()}`, JG_W/2, 58);
+      ctx.font='32px "Press Start 2P", monospace'; ctx.fillStyle='#ffd34d'; ctx.fillText(Math.ceil(S.cont)>0?String(Math.ceil(S.cont)):'JÁ!', JG_W/2, 112);
+      ctx.font='6px "Press Start 2P", monospace'; ctx.fillStyle='#fff'; ctx.fillText(MD.dica.toUpperCase(), JG_W/2, 160); ctx.textAlign='left';
+      legendaObjetos(ctx, 180); }
   }
   function laco(ts){ raf=requestAnimationFrame(laco); if(pausado){ ultimo=ts; return; } let dt=ultimo?(ts-ultimo)/1000:0; ultimo=ts; dt=Math.min(dt,.05); let r=dt; while(r>0){ const d=Math.min(r,1/120); passo(d); r-=d; } desenhar(); }
   const coord=(cx,cy)=>{ const b=canvas.getBoundingClientRect(); return [(cx-b.left)/b.width*JG_W, (cy-b.top)/b.height*JG_H]; };
@@ -1447,82 +1535,6 @@ const COR_MASCOTE = { novi:'#1d4fd6', nova:'#3a5aa8', elo:'#1b2a5c', meioca:'#8a
 const MINI_IMPL = {};
 
 /* =====================================================================
-   GRANDE PRÊMIO (kart visto de cima)
-   ===================================================================== */
-MINI_IMPL.kart = {
-  durPoder:2.5,
-  init(S){
-    const N=240, P=[], cx=520, cy=400, rx=400, ry=270, sem=S.op.fase*0.37;
-    for(let i=0;i<N;i++){ const a=i/N*Math.PI*2, r=1+.2*Math.sin(3*a+sem)+.1*Math.cos(5*a+1+sem); P.push({x:cx+rx*r*Math.cos(a), y:cy+ry*r*Math.sin(a)}); }
-    S.N=N; S.P=P; S.RW=58; S.voltas=3;
-    const ids=[S.meu, ...['novi','nova','elo','meioca'].filter(i=>i!==S.meu)];
-    S.karts=ids.map((id,k)=>{ const p=P[(N-3-k*4)%N], q=P[(N-2-k*4)%N], ang=Math.atan2(q.y-p.y,q.x-p.x), lado=(k%2?1:-1)*12;
-      return { id, x:p.x+Math.cos(ang+Math.PI/2)*lado, y:p.y+Math.sin(ang+Math.PI/2)*lado, ang, v:0, idx:(N-3-k*4)%N, volta:-1, fim:0, ritmo:[1,1.0,.965,.93][k]*(.98+S.rnd()*.04), eu:k===0 }; });
-    S.itens=[]; for(let i=8;i<N;i+=10){ const p=P[i], q=P[(i+1)%N], a=Math.atan2(q.y-p.y,q.x-p.x)+Math.PI/2, off=((i/10|0)%3-1)*14; S.itens.push({x:p.x+Math.cos(a)*off, y:p.y+Math.sin(a)*off, vivo:0}); }
-    S.pasta=pixCanvas(PIX.processo);
-  },
-  prog(S,k){ return k.volta*S.N + k.idx; },
-  maisPerto(S,k){ let best=k.idx, bd=1e9; for(let j=-8;j<=24;j++){ const i=(k.idx+j+S.N)%S.N, p=S.P[i], d=(p.x-k.x)**2+(p.y-k.y)**2; if(d<bd){ bd=d; best=i; } } return [best, Math.sqrt(bd)]; },
-  mover(S,k,dt){
-    const [i,d]=this.maisPerto(S,k), fora=d>S.RW/2;
-    if(k.idx>S.N-20 && i<20){ k.volta++; if(k.volta>=S.voltas && !k.fim){ k.fim=S.tempo; if(k.eu){ S.completou=true; S.som('fim'); } } }
-    else if(k.idx<20 && i>S.N-20) k.volta--;
-    k.idx=i; const turbo=k.eu && S.ativo>0;
-    const vmax=118*k.ritmo*(turbo?1.45:1)*(fora&&!turbo?.55:1);
-    k.v += (vmax-k.v)*Math.min(1,dt*2.2); k.x+=Math.cos(k.ang)*k.v*dt; k.y+=Math.sin(k.ang)*k.v*dt;
-  },
-  mira(S,k,ahead){ const t=S.P[(k.idx+ahead)%S.N]; let da=Math.atan2(t.y-k.y,t.x-k.x)-k.ang; while(da>Math.PI) da-=2*Math.PI; while(da<-Math.PI) da+=2*Math.PI; return da; },
-  auto(S){ const k=S.karts[0], da=this.mira(S,k,7); S.tecla.esq=da<-.06; S.tecla.dir=da>.06; },
-  step(S,dt){
-    const eu=S.karts[0];
-    eu.ang += ((S.tecla.dir?1:0)-(S.tecla.esq?1:0))*2.7*dt;
-    for(const k of S.karts){
-      if(k.fim && !k.eu){ k.v*=.98; k.x+=Math.cos(k.ang)*k.v*dt; k.y+=Math.sin(k.ang)*k.v*dt; continue; }
-      if(!k.eu){ const da=this.mira(S,k,6+((k.id.length)%3)); k.ang+=Math.max(-2.6*dt,Math.min(2.6*dt,da));
-        const dif=Math.max(-.14,Math.min(.14,(this.prog(S,eu)-this.prog(S,k))/S.N*.5)); k.ritmo=Math.max(.85,Math.min(1.12,k.ritmo+(dif*.02))); }
-      if(k.eu && k.fim){ k.v*=.97; k.x+=Math.cos(k.ang)*k.v*dt; k.y+=Math.sin(k.ang)*k.v*dt; continue; }
-      this.mover(S,k,dt);
-    }
-    for(let a=0;a<4;a++) for(let b=a+1;b<4;b++){ const A=S.karts[a], B=S.karts[b], dx=B.x-A.x, dy=B.y-A.y, d=Math.hypot(dx,dy); if(d>0 && d<14){ const p=(14-d)/2; A.x-=dx/d*p; A.y-=dy/d*p; B.x+=dx/d*p; B.y+=dy/d*p; } }
-    for(const it of S.itens){ if(it.vivo>0){ it.vivo-=dt; continue; } if(Math.hypot(it.x-eu.x,it.y-eu.y)<14){ it.vivo=5; S.ganha(1); S.pontos+=10; S.som('moeda'); } }
-    if(eu.fim && S.karts.every(k=>k.fim || S.tempo-eu.fim>2.5)) S.fim=true;
-    if(eu.fim && S.tempo-eu.fim>2.5) S.fim=true;
-    if(S.fim && eu.fim) S.pontos += Math.max(0,(S.limite-eu.fim))*4;
-  },
-  poder(S){ S.ativo=2.5; },
-  posicao(S){ const l=S.karts.map(k=>({k, f:k.fim||0, p:this.prog(S,k)})); l.sort((a,b)=> (a.f&&b.f)?a.f-b.f : a.f?-1 : b.f?1 : b.p-a.p); return l.findIndex(x=>x.k.eu)+1; },
-  progresso(S){ return S.karts.map(k=>({id:k.id, p:Math.max(0,Math.min(1,this.prog(S,k)/(S.voltas*S.N)))})); },
-  draw(S,ctx){
-    const eu=S.karts[0], cx=Math.round(eu.x-JG_W/2), cy=Math.round(eu.y-JG_H/2-20);
-    ctx.fillStyle='#4f9a35'; ctx.fillRect(0,0,JG_W,JG_H);
-    ctx.fillStyle='#5fae42'; for(let y=-(cy%16)-16;y<JG_H;y+=16) for(let x=-(cx%16)-16;x<JG_W;x+=16) if((((x+cx)>>4)+((y+cy)>>4))&1) ctx.fillRect(x,y,16,16);
-    ctx.save(); ctx.translate(-cx,-cy); ctx.lineJoin='round'; ctx.lineCap='round';
-    const caminho=()=>{ ctx.beginPath(); S.P.forEach((p,i)=>i?ctx.lineTo(p.x,p.y):ctx.moveTo(p.x,p.y)); ctx.closePath(); };
-    caminho(); ctx.strokeStyle='#ffffff'; ctx.lineWidth=S.RW+10; ctx.stroke();
-    caminho(); ctx.strokeStyle='#e84a4a'; ctx.setLineDash([12,12]); ctx.stroke(); ctx.setLineDash([]);
-    caminho(); ctx.strokeStyle='#6b6f80'; ctx.lineWidth=S.RW; ctx.stroke();
-    caminho(); ctx.strokeStyle='rgba(255,255,255,.5)'; ctx.lineWidth=2; ctx.setLineDash([8,10]); ctx.stroke(); ctx.setLineDash([]);
-    // largada
-    const a=S.P[0], b=S.P[1], ang=Math.atan2(b.y-a.y,b.x-a.x); ctx.save(); ctx.translate(a.x,a.y); ctx.rotate(ang);
-    for(let i=-S.RW/2;i<S.RW/2;i+=6) for(let j=0;j<2;j++){ ctx.fillStyle=((i/6|0)+j)&1?'#111':'#fff'; ctx.fillRect(j*6-6,i,6,6); } ctx.restore();
-    for(const it of S.itens) if(it.vivo<=0) ctx.drawImage(S.pasta, Math.round(it.x-6), Math.round(it.y-5+Math.sin(S.t*5+it.x)*1.5));
-    const ord=[...S.karts].sort((p,q)=>p.y-q.y);
-    for(const k of ord){ ctx.save(); ctx.translate(Math.round(k.x),Math.round(k.y)); ctx.rotate(k.ang);
-      ctx.fillStyle='#111'; ctx.fillRect(-8,-8,5,3); ctx.fillRect(3,-8,5,3); ctx.fillRect(-8,5,5,3); ctx.fillRect(3,5,5,3);
-      ctx.fillStyle=k.eu?'#f47a1f':COR_MASCOTE[k.id]; ctx.fillRect(-9,-5,18,10); ctx.fillStyle='#ffd34d'; ctx.fillRect(6,-3,3,6); ctx.restore();
-      const s=S.sprites[k.id]; if(s){ const al=18, w=s.width*al/s.height; ctx.globalAlpha=k.eu?1:.85; ctx.drawImage(s, Math.round(k.x-w/2), Math.round(k.y-al-2), Math.round(w), al); ctx.globalAlpha=1; }
-      if(k.eu && S.ativo>0){ ctx.fillStyle='#7fe3ff'; for(let i=0;i<3;i++) ctx.fillRect(Math.round(k.x-Math.cos(k.ang)*(14+i*6))-1, Math.round(k.y-Math.sin(k.ang)*(14+i*6))-1, 3, 3); }
-      if(k.eu){ ctx.fillStyle='#f47a1f'; ctx.fillRect(Math.round(k.x)-3, Math.round(k.y)-26, 7, 2); ctx.fillRect(Math.round(k.x)-1, Math.round(k.y)-24, 3, 2); } }
-    ctx.restore();
-    // minimapa
-    const mx=JG_W-70, my=30, sc=60/880; ctx.fillStyle='rgba(11,21,48,.55)'; ctx.fillRect(mx-4,my,68,50);
-    ctx.strokeStyle='#cfd6e6'; ctx.lineWidth=2; ctx.beginPath(); S.P.forEach((p,i)=>{ const x=mx+(p.x-60)*sc, y=my+4+(p.y-100)*sc; i?ctx.lineTo(x,y):ctx.moveTo(x,y); }); ctx.closePath(); ctx.stroke();
-    for(const k of S.karts){ ctx.fillStyle=k.eu?'#f47a1f':'#ffffff'; ctx.fillRect(Math.round(mx+(k.x-60)*sc)-1, Math.round(my+4+(k.y-100)*sc)-1, 3, 3); }
-    ctx.font='7px "Press Start 2P", monospace'; ctx.fillStyle='#fff'; ctx.textAlign='left'; ctx.fillText(`VOLTA ${Math.min(S.voltas,Math.max(1,eu.volta+1))}/${S.voltas}`, 8, JG_H-8);
-  },
-};
-
-/* =====================================================================
    ARQUIVO (blocos caindo)
    ===================================================================== */
 const PECAS=[ [[1,1,1,1]], [[1,1],[1,1]], [[0,1,0],[1,1,1]], [[1,0,0],[1,1,1]], [[0,0,1],[1,1,1]], [[1,1,0],[0,1,1]], [[0,1,1],[1,1,0]] ];
@@ -1537,7 +1549,7 @@ MINI_IMPL.tetris = {
   gira(f){ return f[0].map((_,i)=>f.map(r=>r[i]).reverse()); },
   fixa(S){ const f=S.p.f; for(let j=0;j<f.length;j++) for(let i=0;i<f[j].length;i++) if(f[j][i] && S.py+j>=0) S.grade[S.py+j][S.px+i]=S.p.c;
     let n=0; for(let r=S.R-1;r>=0;r--){ if(S.grade[r].every(v=>v)){ S.grade.splice(r,1); S.grade.unshift(Array(S.C).fill(0)); n++; r++; } }
-    if(n){ S.ganha(n); S.pontos+=[0,100,250,400,600][n]; S.som('linha'); S.brilho(S.x0+60, S.y0+S.R*S.cel-20, '#ffd34d', 14); }
+    if(n){ S.ganha(n); S.pontos+=[0,100,250,400,600][n]; S.som('linha'); S.brilho(S.x0+60, S.y0+S.R*S.cel-20, '#ffd34d', 14); S.entrega(S.x0+60, S.y0+S.R*S.cel-30); }
     if(S.ativo<=0) S.poder=Math.min(10,S.poder+1);
     this.nova(S); },
   aperta(S,a){ if(a==='esq' && !this.bate(S,S.p.f,S.px-1,S.py)){ S.px--; S.rep=-.18; } if(a==='dir' && !this.bate(S,S.p.f,S.px+1,S.py)){ S.px++; S.rep=-.18; }
@@ -1549,6 +1561,9 @@ MINI_IMPL.tetris = {
     if(S.alvo.feito<S.alvo.r){ this.aperta(S,'acao'); S.alvo.feito++; return; }
     if(S.px<S.alvo.x) this.aperta(S,'dir'); else if(S.px>S.alvo.x) this.aperta(S,'esq'); else S.tecla.baixo=true; },
   step(S,dt){
+    S.prox_pend=(S.prox_pend??15)-dt;
+    if(S.prox_pend<=0){ S.prox_pend=15; const buraco=Math.floor(S.rnd()*S.C), linha=Array(S.C).fill(8); linha[buraco]=0; S.grade.shift(); S.grade.push(linha);
+      if(this.bate(S,S.p.f,S.px,S.py)) S.py=Math.max(0,S.py-1); S.vilao(['pendencia','inadimplencia','custos','demarcacao','ri'][S.nPend=(S.nPend||0)%5], S.x0+60, S.y0+S.R*S.cel-14); S.nPend++; S.som('erro'); }
     if(S.tecla.esq||S.tecla.dir){ S.rep+=dt; if(S.rep>.08){ S.rep=0; const dx=S.tecla.esq?-1:1; if(!this.bate(S,S.p.f,S.px+dx,S.py)) S.px+=dx; } }
     const vel = S.tecla.baixo ? .04 : Math.max(.3,.62-S.tempo*.005);
     S.queda+=dt; if(S.queda>=vel){ S.queda=0; if(!this.bate(S,S.p.f,S.px,S.py+1)) S.py++; else { this.fixa(S); S.alvo=null; S.tecla.baixo=S.auto?false:S.tecla.baixo; } }
@@ -1561,7 +1576,7 @@ MINI_IMPL.tetris = {
     for(let i=0;i<8;i++){ ctx.fillStyle=['#b98a55','#9c6b3c'][i%2]; ctx.fillRect(i*40-((S.t*4)|0)%40,JG_H-20,40,20); }
     ctx.fillStyle='rgba(11,21,48,.8)'; ctx.fillRect(S.x0-4,S.y0-4,S.C*S.cel+8,S.R*S.cel+8);
     ctx.fillStyle='#8a5a2b'; ctx.fillRect(S.x0-6,S.y0+S.R*S.cel+2,S.C*S.cel+12,4);
-    for(let r=0;r<S.R;r++) for(let c=0;c<S.C;c++){ const v=S.grade[r][c]; if(v) this.bloco(ctx,S.x0+c*S.cel,S.y0+r*S.cel,S.cel-1,COR_PECA[v-1]); else if((r+c)%2===0){ ctx.fillStyle='rgba(255,255,255,.04)'; ctx.fillRect(S.x0+c*S.cel,S.y0+r*S.cel,S.cel,S.cel); } }
+    for(let r=0;r<S.R;r++) for(let c=0;c<S.C;c++){ const v=S.grade[r][c]; if(v===8){ this.bloco(ctx,S.x0+c*S.cel,S.y0+r*S.cel,S.cel-1,'#8a8f9e'); ctx.fillStyle='#d93838'; ctx.fillRect(S.x0+c*S.cel+5,S.y0+r*S.cel+2,2,5); ctx.fillRect(S.x0+c*S.cel+5,S.y0+r*S.cel+8,2,2); } else if(v) this.bloco(ctx,S.x0+c*S.cel,S.y0+r*S.cel,S.cel-1,COR_PECA[v-1]); else if((r+c)%2===0){ ctx.fillStyle='rgba(255,255,255,.04)'; ctx.fillRect(S.x0+c*S.cel,S.y0+r*S.cel,S.cel,S.cel); } }
     let gy=S.py; while(!this.bate(S,S.p.f,S.px,gy+1)) gy++;
     const f=S.p.f; for(let j=0;j<f.length;j++) for(let i=0;i<f[j].length;i++) if(f[j][i]){ ctx.strokeStyle='rgba(255,255,255,.35)'; ctx.strokeRect(S.x0+(S.px+i)*S.cel+.5,S.y0+(gy+j)*S.cel+.5,S.cel-2,S.cel-2);
       if(S.py+j>=0) this.bloco(ctx,S.x0+(S.px+i)*S.cel,S.y0+(S.py+j)*S.cel,S.cel-1,COR_PECA[S.p.c-1]); }
@@ -1569,6 +1584,8 @@ MINI_IMPL.tetris = {
     ctx.fillStyle='rgba(11,21,48,.7)'; ctx.fillRect(236,46,52,40); const n=S.prox.f; n.forEach((row,j)=>row.forEach((v,i)=>{ if(v) this.bloco(ctx,262-n[0].length*5+i*10,58+j*10,9,COR_PECA[S.prox.c-1]); }));
     ctx.fillStyle='#fff'; ctx.fillText('LINHAS', 262, 104); ctx.fillStyle='#ffd34d'; ctx.font='14px "Press Start 2P", monospace'; ctx.fillText(String(S.moedas), 262, 124);
     spriteEm(S, ctx, S.meu, 50, JG_H-22, 46);
+    ctx.font='6px "Press Start 2P", monospace'; ctx.fillStyle='#fff'; ctx.textAlign='center'; ctx.fillText('PENDÊNCIA EM', 262, 150); ctx.fillText(Math.max(0,Math.ceil(S.prox_pend??15))+'s', 262, 162);
+    ctx.drawImage(imgObjeto('pendencia',1), 255, 168);
     ctx.textAlign='left';
   },
 };
@@ -1576,7 +1593,8 @@ MINI_IMPL.tetris = {
 /* =====================================================================
    CONFERÊNCIA (bolhas)
    ===================================================================== */
-const COR_BOLHA=['#e84a4a','#ffd34d','#2fa84f','#4aa3ff'];
+const COR_BOLHA=['#e84a4a','#f47a1f','#5b4636','#1d4fd6'];
+const VILAO_BOLHA=['inadimplencia','demarcacao','custos','pendencia'];
 MINI_IMPL.bubble = {
   durPoder:20,
   init(S){ S.Rb=9; S.COLS=9; S.x0=(JG_W-(S.COLS*18+9))/2; S.y0=10; S.par=0; S.linhas=[]; for(let r=0;r<5;r++) S.linhas.push(this.linhaNova(S)); S.mira=-Math.PI/2; S.tiro=null; S.cor=this.corBoa(S); S.prox=this.corBoa(S); S.tiros=0; },
@@ -1601,7 +1619,7 @@ MINI_IMPL.bubble = {
     S.linhas[br][bc]=t.cor;
     const vis=new Set([br+','+bc]), fila=[[br,bc]], grupo=[];
     while(fila.length){ const [r,c]=fila.pop(); grupo.push([r,c]); for(const [rr,cc] of this.viz(S,r,c)) if(!vis.has(rr+','+cc) && S.linhas[rr][cc]===t.cor){ vis.add(rr+','+cc); fila.push([rr,cc]); } }
-    if(grupo.length>=3){ grupo.forEach(([r,c])=>{ const [x,y]=this.pos(S,r,c); S.brilho(x,y,COR_BOLHA[t.cor],4); S.linhas[r][c]=null; }); S.ganha(grupo.length); S.pontos+=grupo.length*10; S.som('linha'); if(S.ativo<=0) S.poder=Math.min(10,S.poder+1); this.solta(S); }
+    if(grupo.length>=3){ grupo.forEach(([r,c])=>{ const [x,y]=this.pos(S,r,c); S.brilho(x,y,COR_BOLHA[t.cor],4); S.linhas[r][c]=null; }); { const [x,y]=this.pos(S,br,bc); S.entrega(x, y+14); } S.ganha(grupo.length); S.pontos+=grupo.length*10; S.som('linha'); if(S.ativo<=0) S.poder=Math.min(10,S.poder+1); this.solta(S); }
     S.tiro=null;
     if(S.tiros%7===0){ S.linhas.unshift(this.linhaNova(S)); S.par^=1; }
     while(S.linhas.length && S.linhas[S.linhas.length-1].every(v=>v==null)) S.linhas.pop();
@@ -1621,7 +1639,9 @@ MINI_IMPL.bubble = {
   },
   poder(S){ S.ativo=20; },
   posicao(S){ const n=S.moedas; return n>=80?1:n>=50?2:n>=25?3:4; },
-  bolha(ctx,x,y,r,cor){ ctx.fillStyle=cor; ctx.beginPath(); ctx.arc(x,y,r,0,7); ctx.fill(); ctx.fillStyle='rgba(255,255,255,.55)'; ctx.fillRect(Math.round(x-r*.5),Math.round(y-r*.55),3,3); ctx.strokeStyle='rgba(0,0,0,.25)'; ctx.stroke(); },
+  bolha(ctx,x,y,r,cor){ ctx.fillStyle=cor; ctx.beginPath(); ctx.arc(x,y,r,0,7); ctx.fill(); ctx.strokeStyle='rgba(0,0,0,.35)'; ctx.stroke();
+    const k=COR_BOLHA.indexOf(cor); if(k>=0){ const g=glifo(VILAO_BOLHA[k]); ctx.drawImage(g, Math.round(x-3.5), Math.round(y-3.5)); } else if(cor==='#ffffff'){ ctx.drawImage(imgObjeto('auditoria',1), Math.round(x-r*.7), Math.round(y-r*.7), Math.round(r*1.4), Math.round(r*1.4)); }
+    ctx.fillStyle='rgba(255,255,255,.45)'; ctx.fillRect(Math.round(x-r*.6),Math.round(y-r*.7),2,2); },
   draw(S,ctx){
     ceuFaixas(S,ctx);
     ctx.fillStyle='rgba(11,21,48,.55)'; ctx.fillRect(S.x0-3,0,S.COLS*18+15,JG_H);
@@ -1660,7 +1680,7 @@ MINI_IMPL.pacman = {
     S.mapa.forEach((l,r)=>l.forEach((ch,c)=>{ if(ch==='.'||ch==='o') S.total++; if(ch==='P'){ S.ini={r,c}; l[c]=' '; } if(ch==='G') l[c]=' '; }));
     S.eu={r:S.ini.r,c:S.ini.c,dr:0,dc:0,qr:0,qc:-1,f:0,parado:0};
     S.fant=[[7,8],[7,9],[7,10]].map(([r,c],k)=>({r,c,dr:0,dc:k-1||1,f:0,casa:1+k*1.5,ir:r,ic:c}));
-    S.relo=pixCanvas(PIX.relogio); S.pasta=pixCanvas(PIX.processo); S.comidos=0; },
+    S.fant.forEach((g,k)=>g.vilao=['pendencia','inadimplencia','custos'][k]); S.comidos=0; },
   livre(S,r,c){ return r>=0&&r<15&&c>=0&&c<19&&S.mapa[r][c]!=='#'; },
   aperta(S,a){ const d={cima:[-1,0],baixo:[1,0],esq:[0,-1],dir:[0,1]}[a]; if(d){ S.eu.qr=d[0]; S.eu.qc=d[1]; } },
   toque(S,x,y,f){ if(f==='ini'){ S.tq=[x,y]; return; } if(f==='fim' && S.tq){ const dx=x-S.tq[0], dy=y-S.tq[1]; if(Math.hypot(dx,dy)>12){ if(Math.abs(dx)>Math.abs(dy)) this.aperta(S,dx>0?'dir':'esq'); else this.aperta(S,dy>0?'baixo':'cima'); } S.tq=null; } },
@@ -1675,7 +1695,7 @@ MINI_IMPL.pacman = {
     // jogador: anda de casa em casa; vira quando a casa pedida estiver livre
     if(e.f===0){ if(this.livre(S,e.r+e.qr,e.c+e.qc)){ e.dr=e.qr; e.dc=e.qc; } if(!this.livre(S,e.r+e.dr,e.c+e.dc)){ e.dr=0; e.dc=0; } }
     if(e.dr||e.dc){ e.f+=6.2*dt; if(e.f>=1){ e.f=0; e.r+=e.dr; e.c+=e.dc; const ch=S.mapa[e.r][e.c];
-        if(ch==='.'||ch==='o'){ S.mapa[e.r][e.c]=' '; S.comidos++; S.ganha(1); S.pontos+=5; S.som('moeda'); if(ch==='o'){ S.ativo=5; S.som('poder'); } if(S.comidos>=S.total){ S.completou=true; S.fim=true; } } } }
+        if(ch==='.'||ch==='o'){ S.mapa[e.r][e.c]=' '; S.comidos++; S.ganha(1); S.pontos+=5; S.som('moeda'); if(ch==='o'){ S.ativo=5; S.som('poder'); textoFlutuante(S.textos, S.x0+e.c*S.T, S.y0+e.r*S.T, (e.r+e.c)%2?'NOVADO! VILÕES PARADOS':'AUDITORIA ✓ VILÕES PARADOS', '#8affb0'); } else if(S.comidos%12===0) S.entrega(S.x0+e.c*S.T, S.y0+e.r*S.T); if(S.comidos>=S.total){ S.completou=true; S.fim=true; } } } }
     // relógios
     for(const g of S.fant){
       if(g.casa>0){ g.casa-=dt; continue; }
@@ -1687,7 +1707,7 @@ MINI_IMPL.pacman = {
       const gx=g.c+g.dc*g.f, gy=g.r+g.dr*g.f, ex=e.c+e.dc*e.f, ey=e.r+e.dr*e.f;
       if(Math.hypot(gx-ex,gy-ey)<.7){
         if(S.ativo>0){ S.pontos+=50; S.som('linha'); S.brilho(S.x0+gx*S.T,S.y0+gy*S.T,'#ffd34d',10); g.r=g.ir; g.c=g.ic; g.f=0; g.casa=3; }
-        else { S.erros++; S.pontos=Math.max(0,S.pontos-30); S.som('erro'); e.r=S.ini.r; e.c=S.ini.c; e.f=0; e.dr=0; e.dc=0; e.parado=1; S.fant.forEach((h,k)=>{ h.r=h.ir; h.c=h.ic; h.f=0; h.casa=1+k; }); break; } }
+        else { S.erros++; S.pontos=Math.max(0,S.pontos-30); S.som('erro'); S.vilao(g.vilao, S.x0+gx*S.T, S.y0+gy*S.T); e.r=S.ini.r; e.c=S.ini.c; e.f=0; e.dr=0; e.dc=0; e.parado=1; S.fant.forEach((h,k)=>{ h.r=h.ir; h.c=h.ic; h.f=0; h.casa=1+k; }); break; } }
     }
   },
   poder(S){ S.ativo=5; },
@@ -1698,11 +1718,278 @@ MINI_IMPL.pacman = {
     S.mapa.forEach((l,r)=>l.forEach((ch,c)=>{ const x=x0+c*T, y=y0+r*T;
       if(ch==='#'){ ctx.fillStyle=S.ceu[0]; ctx.fillRect(x,y,T,T); ctx.fillStyle='rgba(255,255,255,.18)'; ctx.fillRect(x,y,T,2); }
       else if(ch==='.'){ ctx.fillStyle='#ffd34d'; ctx.fillRect(x+5,y+5,3,3); }
-      else if(ch==='o'){ ctx.drawImage(S.pasta, x, y+1); } }));
-    for(const g of S.fant){ const x=x0+(g.c+g.dc*g.f)*T, y=y0+(g.r+g.dr*g.f)*T; ctx.globalAlpha = S.ativo>0 ? (Math.floor(S.t*8)%2?.4:.8) : 1; ctx.drawImage(S.relo, Math.round(x), Math.round(y)); ctx.globalAlpha=1; }
+      else if(ch==='o'){ const im=imgObjeto((r+c)%2?'novado':'auditoria',1); ctx.drawImage(im, x, y, T, T); } }));
+    for(const g of S.fant){ const x=x0+(g.c+g.dc*g.f)*T, y=y0+(g.r+g.dr*g.f)*T; ctx.globalAlpha = S.ativo>0 ? (Math.floor(S.t*8)%2?.4:.8) : 1; const vi=imgObjeto(g.vilao,1), k=T/Math.max(vi.width,vi.height); ctx.drawImage(vi, Math.round(x+(T-vi.width*k)/2), Math.round(y+(T-vi.height*k)/2), Math.round(vi.width*k), Math.round(vi.height*k)); ctx.globalAlpha=1; }
     const e=S.eu, ex=x0+(e.c+e.dc*e.f)*T+T/2, ey=y0+(e.r+e.dr*e.f)*T+T+2;
     if(!(e.parado>0 && Math.floor(S.t*10)%2)) spriteEm(S, ctx, S.meu, ex, ey, 17);
-    if(S.ativo>0){ ctx.font='7px "Press Start 2P", monospace'; ctx.fillStyle='#7fe3ff'; ctx.textAlign='center'; ctx.fillText('RELÓGIOS PARADOS!', JG_W/2, 34); ctx.textAlign='left'; }
+    if(S.ativo>0){ ctx.font='7px "Press Start 2P", monospace'; ctx.fillStyle='#7fe3ff'; ctx.textAlign='center'; ctx.fillText('VILÕES PARADOS!', JG_W/2, 34); ctx.textAlign='left'; }
+  },
+};
+
+/* =====================================================================
+   CORRIDA 3D — câmera atrás do mascote (estrada em perspectiva)
+   - kart:  Grande Prêmio, 3 voltas contra os outros mascotes, desviando dos vilões
+   - pista: corrida em 3 faixas — ◀ ▶ troca de faixa, PULAR passa por cima dos vilões baixos
+   ===================================================================== */
+const R3 = { SEG:200, RW:900, CAMH:1000, D:.84, DRAW:120, HZ:96 };
+R3.PZ = R3.CAMH*R3.D;
+const FAIXAS = [-2/3, 0, 2/3];
+// largura no mundo (unidades) e altura (unidades) de cada objeto
+const TAM3D = { pendencia:[360,150], inadimplencia:[380,150], custos:[380,150], demarcacao:[340,140], ri:[560,330],
+  analise:[260,0], mapeamento:[280,0], pa:[250,0], auditoria:[260,0], novado:[280,0] };
+
+function estrada3d(rnd, n, forca){
+  const s=[], add=c=>s.push({c, o:[]});
+  for(let i=0;i<30;i++) add(0);
+  while(s.length<n-40){
+    const c=(rnd()<.5?-1:1)*(.8+rnd()*forca), en=8+(rnd()*14|0), ho=14+(rnd()*36|0);
+    for(let i=0;i<en;i++) add(c*i/en); for(let i=0;i<ho;i++) add(c); for(let i=0;i<en;i++) add(c*(1-i/en));
+    const r=8+(rnd()*26|0); for(let i=0;i<r;i++) add(0);
+  }
+  while(s.length<n) add(0);
+  return s;
+}
+function obj3d(t, x, extra={}){ const [ww,alt]=TAM3D[t]; return { t, x, wn:ww/R3.RW, alt, ent:!!ENTREGAS[t], ar:0, ...extra }; }
+
+/* ---------------- desenho comum ---------------- */
+function kartTraseira(ctx, cx, by, w, cor, spr, incl=0){
+  const R=(x,y,ww,hh,c)=>{ ctx.fillStyle=c; ctx.fillRect(Math.round(cx+x*w), Math.round(by+y*w), Math.max(1,Math.round(ww*w)), Math.max(1,Math.round(hh*w))); };
+  ctx.fillStyle='rgba(0,0,0,.3)'; ctx.beginPath(); ctx.ellipse(cx, by-1, w*.55, Math.max(1.5,w*.05), 0, 0, 7); ctx.fill();
+  // piloto (pernas escondidas pela carroceria)
+  if(spr){ const sh=w*.78, sw=spr.width*sh/spr.height; ctx.drawImage(spr, Math.round(cx-sw/2+incl*w*.05), Math.round(by-w*.3-sh*.78), Math.round(sw), Math.round(sh)); }
+  R(-.5,-.3,.2,.3,'#14141c'); R(.3,-.3,.2,.3,'#14141c');            // rodas traseiras
+  R(-.48,-.27,.04,.24,'#3a3a48'); R(.44,-.27,.04,.24,'#3a3a48');
+  R(-.32,-.36,.64,.08,'#14141c');                                       // aerofólio
+  R(-.36,-.29,.72,.2,cor); R(-.36,-.29,.72,.04,'rgba(255,255,255,.4)');  // carroceria
+  R(-.3,-.12,.6,.06,'rgba(0,0,0,.35)');                                 // para-choque
+  R(-.12,-.1,.08,.06,'#8a8f9e'); R(.04,-.1,.08,.06,'#8a8f9e');          // escapamentos
+  R(-.06,-.24,.12,.08,'#ffffff');                                       // placa
+}
+function fundo3d(S, ctx){
+  const W=JG_W, HZ=R3.HZ, c=S.ceu, h=Math.ceil(HZ/3);
+  for(let i=0;i<3;i++){ ctx.fillStyle=c[i]; ctx.fillRect(0,i*h,W,h+1); }
+  ctx.fillStyle='rgba(255,255,255,.9)'; for(let i=0;i<5;i++){ const x=((i*90 - S.bgX*.3)%450+450)%450-60, y=14+(i*23)%40; ctx.fillRect(x|0,y+4,30,6); ctx.fillRect((x+5)|0,y,18,5); }
+  // castelo da Novação ao longe
+  const cs=pixF('castelo',2), cx=((W/2 - S.bgX*.5)%(W+260)+W+260)%(W+260)-130; ctx.globalAlpha=.95; ctx.drawImage(cs, Math.round(cx-cs.width/2), HZ-cs.height-10); ctx.globalAlpha=1;
+  // morros
+  ctx.fillStyle='#5aa648'; for(let i=-1;i<6;i++){ const x=((i*80 - S.bgX*.8)%480+480)%480-80; ctx.beginPath(); ctx.ellipse(x|0, HZ, 56, 22, 0, Math.PI, 0); ctx.fill(); }
+  ctx.fillStyle='#3f8f3a'; for(let i=-1;i<8;i++){ const x=((i*60+30 - S.bgX*1.2)%480+480)%480-60; ctx.beginPath(); ctx.ellipse(x|0, HZ, 34, 12, 0, Math.PI, 0); ctx.fill(); }
+}
+function desenhar3d(S, ctx, desenharJogador){
+  const {SEG,RW,D,DRAW,HZ,CAMH}=R3, W=JG_W, H=JG_H;
+  fundo3d(S, ctx);
+  const pos=S.pos, base=Math.floor(pos/SEG), resto=pos-base*SEG, camX=S.J.x*RW;
+  let x=0, dx=-(S.segs[base%S.N].c*(resto/SEG)*2.5);
+  const proj=[];
+  for(let n=0;n<DRAW;n++){
+    const i=base+n; if(!S.loop && i>=S.N) break;
+    const seg=S.segs[((i%S.N)+S.N)%S.N], z1=n*SEG-resto, z2=z1+SEG, x1=x, x2=x+dx;
+    x+=dx; dx+=seg.c*2.5;
+    if(z1<=40) { proj[n]=null; continue; }
+    const s1=D/z1, s2=D/z2, X1=W/2+s1*(x1-camX)*W/2, X2=W/2+s2*(x2-camX)*W/2, Y1=HZ+s1*CAMH*(H-HZ), Y2=HZ+s2*CAMH*(H-HZ), w1=s1*RW*W/2, w2=s2*RW*W/2;
+    proj[n]={s:s1, X:X1, Y:Y1, z:z1, i, xw:x1};
+    if(Y1<HZ) continue;
+    const listra=((i/3|0)%2)===0;
+    ctx.fillStyle=listra?S.grama[0]:S.grama[1]; ctx.fillRect(0, Math.floor(Y2), W, Math.ceil(Y1-Y2)+1);
+    const quad=(a,b,c2,d,cor)=>{ ctx.fillStyle=cor; ctx.beginPath(); ctx.moveTo(a,Y1); ctx.lineTo(b,Y1); ctx.lineTo(d,Y2); ctx.lineTo(c2,Y2); ctx.closePath(); ctx.fill(); };
+    quad(X1-w1*1.12, X1+w1*1.12, X2-w2*1.12, X2+w2*1.12, listra?'#d93838':'#ffffff');
+    quad(X1-w1, X1+w1, X2-w2, X2+w2, listra?S.asfalto[0]:S.asfalto[1]);
+    if(seg.chegada){ for(let k=0;k<8;k++){ const a=-1+k/4, b=a+.25; ctx.fillStyle=(k+((i)%2))%2?'#111':'#fff'; ctx.beginPath(); ctx.moveTo(X1+a*w1,Y1); ctx.lineTo(X1+b*w1,Y1); ctx.lineTo(X2+b*w2,Y2); ctx.lineTo(X2+a*w2,Y2); ctx.fill(); } }
+    else if(listra) for(const f of [-1/3,1/3]){ const lw1=w1*.03, lw2=w2*.03; ctx.fillStyle='rgba(255,255,255,.75)'; ctx.beginPath(); ctx.moveTo(X1+f*w1*2-lw1,Y1); ctx.lineTo(X1+f*w1*2+lw1,Y1); ctx.lineTo(X2+f*w2*2+lw2,Y2); ctx.lineTo(X2+f*w2*2-lw2,Y2); ctx.fill(); }
+  }
+  // objetos e rivais, de trás para frente
+  const porN={}; for(const r of S.rivais){ let rel=r.z-pos; if(S.loop){ rel=((rel%S.L)+S.L)%S.L; if(rel>S.L/2) rel-=S.L; } if(rel<R3.PZ*.55 || rel>DRAW*SEG) continue; const n=Math.floor((rel+resto)/SEG); (porN[n]=porN[n]||[]).push({r, rel}); }
+  ctx.imageSmoothingEnabled=false;
+  for(let n=proj.length-1;n>=1;n--){ const p=proj[n]; if(!p) continue;
+    const seg=S.segs[((p.i%S.N)+S.N)%S.N];
+    if(p.z>R3.PZ*.82) for(const o of seg.o){ if(S.sumiu(o)) continue; desenharObj3d(S, ctx, o, p); }
+    if(porN[n]) for(const {r, rel} of porN[n]){ const s=D/rel, X=W/2+s*(p.xw + r.x*RW - camX)*W/2, Y=HZ+s*CAMH*(H-HZ), w=s*(S.loop?420:300)*W/2;
+      S.desenharRival(ctx, r, X, Y - s*(r.alt||0)*(H-HZ)/1, w); }
+  }
+  desenharJogador(ctx);
+}
+function desenharObj3d(S, ctx, o, p){
+  const W=JG_W, img=imgObjeto(o.t,1), s=p.s, X=p.X+s*o.x*R3.RW*W/2, dw=s*TAM3D[o.t][0]*W/2; if(dw<2 || dw>420) return;
+  const dh = o.t==='ri' ? s*TAM3D.ri[1]*(JG_H-R3.HZ)*1.0*1.0 : dw*img.height/img.width;
+  const flut = o.ent ? (Math.sin(S.t*5+o.x*9)*.5+.5)*dw*.12 : 0, ar = o.ar ? s*o.ar*(JG_H-R3.HZ) : 0;
+  const y = p.Y - dh - ar - flut;
+  if(o.ent){ ctx.fillStyle='rgba(255,255,255,.25)'; ctx.beginPath(); ctx.arc(X, y+dh/2, dw*.62, 0, 7); ctx.fill(); }
+  else { ctx.fillStyle='rgba(0,0,0,.25)'; ctx.fillRect(Math.round(X-dw/2), Math.round(p.Y-2), Math.round(dw), Math.max(1,Math.round(dw*.06))); }
+  ctx.drawImage(img, Math.round(X-dw/2), Math.round(y), Math.round(dw), Math.round(dh));
+  if(!o.ent && dw>34 && dw<170){ ctx.font='6px "Press Start 2P", monospace'; ctx.textAlign='center'; const t=VILOES[o.t].curto, tw=ctx.measureText(t).width+6;
+    ctx.globalAlpha=Math.min(1,(dw-34)/30); ctx.fillStyle='rgba(120,10,10,.85)'; ctx.fillRect(Math.round(X-tw/2), Math.round(y-11), Math.round(tw), 9); ctx.fillStyle='#fff'; ctx.fillText(t, Math.round(X), Math.round(y-4)); ctx.globalAlpha=1; ctx.textAlign='left'; }
+}
+
+/* ---------------- base comum dos dois modos ---------------- */
+function iniciar3d(S, N, loop, forca){
+  S.segs=estrada3d(S.rnd, N, forca); S.N=N; S.L=N*R3.SEG; S.loop=loop; S.pos=0; S.bgX=0; S.textos=[];
+  const F=FASES[(S.op.mundo||1)-1]; S.grama=['#58a63c','#4f9a35']; S.asfalto=['#6b6f80','#646878'];
+  if(F.fundo==='noite'){ S.grama=['#2f5a3a','#284e32']; } if(F.fundo==='estantes'){ S.grama=['#b98a55','#a8794a']; }
+  S.sumiu = o => o.ent ? (S.loop ? o.volta===S.J.volta : o.pego) : (S.loop ? false : false);
+}
+function voltaZ(S, z){ return S.loop ? ((z%S.L)+S.L)%S.L : z; }
+function cruzou(S, zA, zB, cb){   // chama cb(obj) para objetos entre zA e zB (mundo)
+  const a=Math.floor(zA/R3.SEG), b=Math.floor(zB/R3.SEG);
+  for(let k=a;k<=b;k++){ const i=S.loop?((k%S.N)+S.N)%S.N:k; if(i<0||i>=S.N) continue; const segZ=k*R3.SEG; if(segZ<zA || segZ>=zB) continue; for(const o of S.segs[i].o) cb(o); }
+}
+function tocaObj(S, o, lx, alt, larg){
+  if(Math.abs(o.x-lx) > (o.wn+larg)/2) return false;
+  if(o.ent) return Math.abs(alt-(o.ar||0)) < 170;
+  if(o.t==='ri') return alt < 300;
+  return alt < 120;
+}
+
+/* =====================================================================
+   GRANDE PRÊMIO (kart 3D)
+   ===================================================================== */
+MINI_IMPL.kart = {
+  durPoder:2.5,
+  init(S){
+    iniciar3d(S, 760, true, 2.2); S.voltas=3;
+    S.segs[0].chegada=S.segs[1].chegada=true;
+    // vilões e entregas pela pista (iguais em todas as voltas)
+    const r=S.rnd;
+    for(let i=60;i<S.N-20;i+=26+(r()*16|0)){
+      const tipo=r();
+      if(tipo<.2){ const f=r()<.5?0:2; S.segs[i].o.push(obj3d('ri', FAIXAS[f])); }
+      else if(tipo<.62){ const v=IDS_VILOES.filter(v=>v!=='ri')[r()*4|0]; S.segs[i].o.push(obj3d(v, FAIXAS[r()*3|0] + (r()-.5)*.2)); }
+      else { const x=FAIXAS[r()*3|0], e=IDS_ENTREGAS[r()*5|0]; for(let k=0;k<3;k++) S.segs[i+k*3].o.push(obj3d(e, x)); }
+    }
+    const ids=['novi','nova','elo','meioca'].filter(i=>i!==S.meu);
+    S.J={ x:0, v:0, volta:0, z:R3.PZ, giro:0, invul:0, fim:0 };
+    S.rivais=ids.map((id,k)=>({ id, z:R3.PZ+[700,350,-350][k], x:[-.45,.45,0][k], v:0, ritmo:[1.02,.99,.965][k]*(.985+r()*.03), volta:0, fim:0 }));
+    S.desenharRival=(ctx, rv, X, Y, w)=>kartTraseira(ctx, X, Y, w, COR_MASCOTE[rv.id], S.sprites[rv.id]);
+    S.vmax=9600;
+  },
+  zTot(S, o){ return o.z; },
+  auto(S){ const J=S.J; let alvo=0; const pz=S.pos+R3.PZ;
+    for(let d=200; d<2600; d+=200){ const i=Math.floor(voltaZ(S,pz+d)/R3.SEG); for(const o of S.segs[i].o){ if(o.ent) continue; if(Math.abs(o.x-J.x)<(o.wn+.4)/2){ alvo = o.x>0 ? -.6 : .6; d=9999; break; } } }
+    const seg=S.segs[Math.floor(voltaZ(S,pz)/R3.SEG)]; alvo+=seg.c*.12;
+    S.tecla.esq = J.x>alvo+.06; S.tecla.dir = J.x<alvo-.06; },
+  step(S,dt){
+    const J=S.J, turbo=S.ativo>0, seg=S.segs[Math.floor(voltaZ(S,S.pos+R3.PZ)/R3.SEG)];
+    if(!J.fim){
+      const fora=Math.abs(J.x)>1.05, vmax=S.vmax*(turbo?1.38:1)*(fora&&!turbo?.5:1)*(J.giro>0?.35:1);
+      J.v += (vmax-J.v)*Math.min(1,dt*(J.v<vmax?1.1:3));
+      const pct=J.v/S.vmax, dir=(S.tecla.dir?1:0)-(S.tecla.esq?1:0);
+      J.x += dir*dt*2.3*Math.min(1,pct+.2); J.x -= dt*pct*seg.c*.62; J.x=Math.max(-1.5,Math.min(1.5,J.x)); J.incl=dir;
+    } else { J.v*=.985; }
+    if(J.giro>0) J.giro-=dt; if(J.invul>0) J.invul-=dt;
+    const zA=S.pos+R3.PZ; S.pos+=J.v*dt; J.z=S.pos+R3.PZ; const zB=J.z; S.bgX+=seg.c*J.v*dt*.0012;
+    const volta=Math.floor((J.z-R3.PZ)/S.L); if(volta>J.volta){ J.volta=volta; if(volta>=S.voltas && !J.fim){ J.fim=S.tempo; S.completou=true; S.som('fim'); S.pontos+=Math.max(0,(S.limite-S.tempo))*4; } else if(volta<S.voltas){ S.som('poder'); textoFlutuante(S.textos, JG_W/2, 70, `VOLTA ${volta+1}/${S.voltas}`, '#ffd34d'); } }
+    if(!J.fim) cruzou(S, zA, zB, o=>{
+      if(!tocaObj(S,o,J.x,0,.34)) return;
+      if(o.ent){ if(o.volta===J.volta) return; o.volta=J.volta; S.ganha(1); S.pontos+=10; S.som('moeda'); textoFlutuante(S.textos, JG_W/2, 150, '+ '+ENTREGAS[o.t].curto, '#8affb0'); }
+      else if(J.invul<=0 && !turbo){ J.giro=.8; J.invul=1.4; J.v*=.45; S.erros++; S.pontos=Math.max(0,S.pontos-5); S.som('erro'); textoFlutuante(S.textos, JG_W/2, 140, VILOES[o.t].curto, '#ff8a8a'); }
+    });
+    // rivais com elástico
+    for(const rv of S.rivais){
+      if(rv.fim){ rv.v*=.985; rv.z+=rv.v*dt; continue; }
+      const dif=Math.max(-.16,Math.min(.16,(J.z-rv.z)/S.L*.9)), alvo=S.vmax*rv.ritmo*(1+dif);
+      rv.v += (alvo-rv.v)*Math.min(1,dt*1.0); rv.z+=rv.v*dt;
+      // desvia de vilões à frente
+      const i=Math.floor(voltaZ(S,rv.z+600)/R3.SEG), ob=S.segs[i].o.find(o=>!o.ent && Math.abs(o.x-rv.x)<(o.wn+.35)/2);
+      if(ob) rv.alvoX = ob.x>0 ? -.55 : .55; rv.x += ((rv.alvoX??rv.x)-rv.x)*Math.min(1,dt*2);
+      if(Math.floor((rv.z-R3.PZ)/S.L)>=S.voltas && !rv.fim) rv.fim=S.tempo;
+      // encostou no jogador
+      const dz=voltaZ(S,rv.z)-voltaZ(S,J.z); if(Math.abs(dz)<160 && Math.abs(rv.x-J.x)<.32){ J.x += (J.x<rv.x?-1:1)*.12; if(dz>0) J.v*=.96; }
+    }
+    if(J.fim && S.tempo-J.fim>2.2) S.fim=true;
+  },
+  poder(S){ S.ativo=2.5; S.J.invul=2.6; },
+  posicao(S){ const l=[{eu:1, f:S.J.fim, z:S.J.z}, ...S.rivais.map(r=>({f:r.fim, z:r.z}))]; l.sort((a,b)=>(a.f&&b.f)?a.f-b.f : a.f?-1 : b.f?1 : b.z-a.z); return l.findIndex(x=>x.eu)+1; },
+  progresso(S){ const T=S.L*S.voltas; return [{id:S.meu, p:Math.max(0,Math.min(1,(S.J.z-R3.PZ)/T))}, ...S.rivais.map(r=>({id:r.id, p:Math.max(0,Math.min(1,(r.z-R3.PZ)/T))}))]; },
+  draw(S,ctx){
+    const J=S.J;
+    desenhar3d(S, ctx, c=>{ const w=110, cx=JG_W/2 + (J.incl||0)*3, by=JG_H-8 + (Math.floor(S.t*14)%2 && J.v>2000 ? -1 : 0);
+      if(J.invul>0 && Math.floor(S.t*14)%2 && S.ativo<=0) return;
+      c.save(); if(J.giro>0){ c.translate(cx, by-20); c.rotate(Math.sin(J.giro*18)*.25); c.translate(-cx, -(by-20)); }
+      kartTraseira(c, cx, by, w, '#f47a1f', S.spr, J.incl||0); c.restore();
+      if(S.ativo>0){ c.fillStyle='#7fe3ff'; for(let i=0;i<4;i++) c.fillRect(Math.round(cx-24+i*14+Math.random()*3), by+1, 6, 3); } });
+    desenharTextos(ctx, S.textos, 1/60);
+    ctx.font='7px "Press Start 2P", monospace'; ctx.fillStyle='#fff'; ctx.textAlign='right'; ctx.fillText(`VOLTA ${Math.min(S.voltas,J.volta+1)}/${S.voltas}`, JG_W-8, 52); ctx.textAlign='left';
+  },
+};
+
+/* =====================================================================
+   CORRIDA 3D (pista com faixas, pulo e desvio)
+   ===================================================================== */
+MINI_IMPL.pista = {
+  get durPoder(){ return 5; },
+  init(S){
+    const etapa=(S.op.etapa||1);
+    iniciar3d(S, 2380, false, 1.4);
+    for(let i=S.N-150;i<S.N-146;i++) S.segs[i].chegada=true; S.fimZ=(S.N-150)*R3.SEG;
+    const r=S.rnd; let i=50; const dens=1+etapa*.04;
+    while(i<S.N-170){
+      const p=r(), livre=r()*3|0, outras=[0,1,2].filter(f=>f!==livre);
+      if(p<.28){ const f=r()*3|0; S.segs[i].o.push(obj3d(IDS_VILOES[r()*3|0], FAIXAS[f])); S.segs[i].o.push(obj3d(IDS_ENTREGAS[r()*5|0], FAIXAS[f], {ar:260})); }
+      else if(p<.46){ outras.forEach(f=>S.segs[i].o.push(obj3d(IDS_VILOES[r()*3|0], FAIXAS[f]))); for(let k=0;k<3;k++) S.segs[i-4+k*4].o.push(obj3d(IDS_ENTREGAS[r()*5|0], FAIXAS[livre])); }
+      else if(p<.62){ S.segs[i].o.push(obj3d('ri', FAIXAS[outras[0]])); S.segs[i].o.push(obj3d('ri', FAIXAS[outras[1]])); }
+      else if(p<.74){ [0,1,2].forEach(f=>S.segs[i].o.push(obj3d('demarcacao', FAIXAS[f]))); S.segs[i].o.push(obj3d('novado', 0, {ar:280})); }
+      else if(p<.86){ S.segs[i].o.push(obj3d('ri', FAIXAS[livre])); S.segs[i].o.push(obj3d(IDS_VILOES[r()*3|0], FAIXAS[outras[r()*2|0]])); }
+      else { const f=r()*3|0, e=IDS_ENTREGAS[r()*5|0]; for(let k=0;k<4;k++) S.segs[i+k*3].o.push(obj3d(e, FAIXAS[f])); }
+      i += Math.round((30+r()*22)/dens);
+    }
+    S.J={ x:0, faixa:1, alt:0, vy:0, v:0, z:0, bate:0, invul:0, fim:0 };
+    const ids=['novi','nova','elo','meioca'].filter(i=>i!==S.meu);
+    S.rivais=ids.map((id,k)=>({ id, z:R3.PZ+[260,-200,520][k], x:FAIXAS[[0,2,1][k]], faixa:[0,2,1][k], alt:0, vy:0, ritmo:[1.03,.99,.965][k]*(.985+r()*.03), fim:0, troca:2+r()*3 }));
+    S.desenharRival=(ctx, rv, X, Y, w)=>{ const s=S.sprites[rv.id]; if(!s) return; const h=w*1.3, sw=s.width*h/s.height; ctx.globalAlpha=.9; ctx.fillStyle='rgba(0,0,0,.25)'; ctx.fillRect(Math.round(X-sw*.4), Math.round(Y-2), Math.round(sw*.8), 2); ctx.drawImage(s, Math.round(X-sw/2), Math.round(Y-h), Math.round(sw), Math.round(h)); ctx.globalAlpha=1; };
+    S.vmax=7400*(1+etapa*.015);
+  },
+  aperta(S,a){ const J=S.J; if(J.fim) return;
+    if(a==='esq' && J.faixa>0){ J.faixa--; S.som('bip'); }
+    if(a==='dir' && J.faixa<2){ J.faixa++; S.som('bip'); }
+    if((a==='acao'||a==='cima') && J.alt<=0){ J.vy = (S.meu==='meioca' && S.ativo>0) ? 2050 : 1450; J.alt=1; S.som('pulo'); } },
+  toque(S,x,y,f){ if(f==='ini'){ S.tq=[x,y]; return; } if(f!=='fim'||!S.tq) return; const dx=x-S.tq[0], dy=y-S.tq[1]; S.tq=null;
+    if(Math.abs(dx)>18 && Math.abs(dx)>Math.abs(dy)) this.aperta(S, dx<0?'esq':'dir');
+    else if(dy<-14) this.aperta(S,'acao');
+    else this.aperta(S, x<JG_W*.3?'esq' : x>JG_W*.7?'dir' : 'acao'); },
+  auto(S){ const J=S.J; if(S.ia>0) return; const pz=S.pos+R3.PZ;
+    const perigo=f=>{ for(let d=0; d<1700; d+=R3.SEG){ const i=Math.floor((pz+d)/R3.SEG); if(i>=S.N) break; for(const o of S.segs[i].o) if(!o.ent && Math.abs(o.x-FAIXAS[f])<.3) return {o, d}; } return null; };
+    const aqui=perigo(J.faixa);
+    if(aqui){ const melhor=[0,1,2].filter(f=>Math.abs(f-J.faixa)===1 && !perigo(f));
+      if(aqui.o.t==='ri' || aqui.o.t!=='demarcacao' && melhor.length){ if(melhor.length){ this.aperta(S, melhor[0]<J.faixa?'esq':'dir'); S.ia=.25; return; } }
+      if(aqui.o.t!=='ri' && aqui.d<1500 && aqui.d>=700) this.aperta(S,'acao'); } },
+  step(S,dt){
+    const J=S.J; if(S.ia>0) S.ia-=dt;
+    const pz=S.pos+R3.PZ, seg=S.segs[Math.min(S.N-1,Math.floor(pz/R3.SEG))];
+    const vmax=J.fim ? S.vmax*.4 : S.vmax*(J.bate>0?.45:1)*(S.ativo>0&&S.meu==='novi'?1.4:1);
+    J.v += (vmax-J.v)*Math.min(1,dt*1.4);
+    J.x += (FAIXAS[J.faixa]-J.x)*Math.min(1,dt*13);
+    if(J.alt>0 || J.vy>0){ J.alt+=J.vy*dt; J.vy-=4300*dt*((S.meu==='meioca'&&S.ativo>0&&J.vy<0)?.45:1); if(J.alt<=0){ J.alt=0; J.vy=0; } }
+    if(J.bate>0) J.bate-=dt; if(J.invul>0) J.invul-=dt;
+    const zA=pz; S.pos+=J.v*dt; J.z=S.pos+R3.PZ; S.bgX+=seg.c*J.v*dt*.0012;
+    const inv = J.invul>0 || (S.ativo>0 && (S.meu==='novi'||S.meu==='nova')), ima = S.ativo>0 && S.meu==='elo';
+    if(!J.fim) cruzou(S, zA, J.z, o=>{
+      if(o.ent){ if(o.pego) return; if(ima ? Math.abs(J.alt-(o.ar||0))<260 : tocaObj(S,o,J.x,J.alt,.3)){ o.pego=true; S.ganha(1); S.pontos+=10; S.som('moeda'); textoFlutuante(S.textos, JG_W/2, 120, '+ '+ENTREGAS[o.t].curto, '#8affb0'); } return; }
+      if(!inv && tocaObj(S,o,J.x,J.alt,.3)){ J.bate=.9; J.invul=1.3; S.erros++; S.pontos=Math.max(0,S.pontos-5); S.som('erro'); textoFlutuante(S.textos, JG_W/2, 110, VILOES[o.t].curto, '#ff8a8a'); }
+    });
+    if(J.z>=S.fimZ && !J.fim){ J.fim=S.tempo; S.completou=true; S.som('fim'); S.pontos+=Math.max(0,(S.limite-S.tempo))*4; }
+    for(const rv of S.rivais){
+      if(rv.fim){ rv.z+=S.vmax*.4*dt; continue; }
+      const dif=Math.max(-.25,Math.min(.25,(J.z-rv.z)/9000)), v=S.vmax*rv.ritmo*(1+dif*.6); rv.z+=v*dt;
+      rv.troca-=dt; if(rv.troca<=0){ rv.troca=2+S.rnd()*3; rv.faixa=Math.max(0,Math.min(2,rv.faixa+(S.rnd()<.5?-1:1))); }
+      rv.x += (FAIXAS[rv.faixa]-rv.x)*Math.min(1,dt*6);
+      const i=Math.floor((rv.z+250)/R3.SEG); if(rv.alt<=0 && i<S.N && S.segs[i].o.some(o=>!o.ent && Math.abs(o.x-rv.x)<.35)) rv.vy=1400;
+      if(rv.alt>0||rv.vy>0){ rv.alt+=rv.vy*dt; rv.vy-=4300*dt; if(rv.alt<=0){ rv.alt=0; rv.vy=0; } }
+      if(rv.z>=S.fimZ) rv.fim=S.tempo;
+    }
+    if(J.fim && (S.rivais.every(r=>r.fim) || S.tempo-J.fim>2.2)) S.fim=true;
+  },
+  poder(S){ S.ativo=5; if(S.meu==='nova') S.J.invul=5; },
+  posicao(S){ const l=[{eu:1, f:S.J.fim, z:S.J.z}, ...S.rivais.map(r=>({f:r.fim, z:r.z}))]; l.sort((a,b)=>(a.f&&b.f)?a.f-b.f : a.f?-1 : b.f?1 : b.z-a.z); return l.findIndex(x=>x.eu)+1; },
+  progresso(S){ return [{id:S.meu, p:Math.max(0,Math.min(1,S.J.z/S.fimZ))}, ...S.rivais.map(r=>({id:r.id, p:Math.max(0,Math.min(1,r.z/S.fimZ))}))]; },
+  draw(S,ctx){
+    const J=S.J;
+    desenhar3d(S, ctx, c=>{ const s=S.spr; if(!s) return; if(J.invul>0 && Math.floor(S.t*14)%2 && S.ativo<=0) return;
+      const h=52, w=s.width*h/s.height, cx=JG_W/2 + (J.x-FAIXAS[J.faixa])*-40, sobe=J.alt*.144, by=JG_H-6 + (J.alt<=0 && Math.floor(S.t*10)%2?-1:0);
+      c.fillStyle='rgba(0,0,0,.3)'; c.beginPath(); c.ellipse(cx, JG_H-6, w*.38*(1-Math.min(.5,sobe/90)), 3, 0, 0, 7); c.fill();
+      c.drawImage(s, Math.round(cx-w/2), Math.round(by-h-sobe), Math.round(w), h);
+      const ac = S.tema && typeof acessorioDe==='function' ? acessorioDe(S.tema) : null, an = ac && ANCORAS.sprite[S.meu];
+      if(an){ const k=h/s.height; desenharAcessorio(c, ac, cx-w/2+an[0]*k, by-h-sobe+an[1]*k, an[2]*k, an[3]); }
+      if(S.ativo>0){ c.strokeStyle={novi:'#7fe3ff',nova:'#ffffff',elo:'#7fe3ff',meioca:'#ffd34d'}[S.meu]; c.lineWidth=1; c.strokeRect(Math.round(cx-w/2)-1, Math.round(by-h-sobe)-1, Math.round(w)+2, h+2); } });
+    desenharTextos(ctx, S.textos, 1/60);
   },
 };
 
@@ -1731,12 +2018,13 @@ CAL.forEach(c=>{ c.tema=temaDoDia(c.data); c.etapa=CONFIG.CHECKPOINTS.findIndex(
 // fases bônus depois da chegada (Natal e Ano Novo): não contam escolha
 const CAL_BONUS = TEMAS.filter(t=>t.bonus).map((t,i)=>({p:CAL.length+1+i, data:t.dia, mundo:9, dia:i+1, meta:12, bonus:true, tema:t}));
 const CAL_ALL = [...CAL, ...CAL_BONUS];
-CAL_ALL.forEach(c=>{ if(c.p%4===0){ c.modo=CONFIG.MINIJOGOS[(c.p/4-1)%CONFIG.MINIJOGOS.length]; if(!c.bonus) c.meta=MODOS[c.modo].meta; } });
+CAL_ALL.forEach(c=>{ if(c.p%4===0){ c.modo=CONFIG.MINIJOGOS[(c.p/4-1)%CONFIG.MINIJOGOS.length]; if(!c.bonus) c.meta=MODOS[c.modo].meta; }
+  else if(c.p%4!==2) c.modo='pista'; });   // em cada bloco de 4: corrida 3D, corrida lateral, corrida 3D, modalidade
 const nomeEtapa = c => c && c.etapa ? CONFIG.CHECKPOINTS[c.etapa-1].nome : '';
 // nome da fase para as telas: "Fase 3-2 · Mapeamento"
 const tituloFase = c => c.bonus ? `Fase bônus · ${c.tema.nome}` : `Fase ${c.etapa}-${c.ie} · ${nomeEtapa(c)}`;
 const nomeModo = c => c.modo ? MODOS[c.modo].titulo : 'Corrida';
-const rotuloItem = c => c.modo ? MODOS[c.modo].rotulo : (c.tema?'itens':'pastas');
+const rotuloItem = c => c.modo ? MODOS[c.modo].rotulo : 'entregas';
 const infoFase = p => CAL_ALL[Math.max(0,Math.min(CAL_ALL.length-1,p-1))];
 const rotFase = p => { const c=infoFase(p); return c.bonus ? 'bônus' : `${c.etapa}-${c.ie}`; };
 const hojeISO = () => SIM_FIM ? DIA_APOS_FIM : (SIM && SIM_FASE ? (CAL_ALL[SIM_FASE-1]||CAL_ALL[0]).data : fmt.format(new Date()));
@@ -1898,6 +2186,8 @@ function renderInicio(){
   else html=`<div class="hojecard"><div class="num">FASE<b>${C.etapa}-${C.ie}</b></div><div><h3>${C.tema?'★ '+esc(C.tema.nome):esc(nomeEtapa(C))}</h3><p>${C.tema?esc(C.tema.motiva||C.tema.frase)+' Figurinha da data disponível hoje.':`Etapa ${C.etapa} de 7 · ${esc(nomeEtapa(C))}`} · fase ${st.fase} de ${DIAS.length}</p><span class="metabadge">🎯 Desafio do dia: ${C.meta} ${rotuloItem(C)}</span> ${C.modo?`<span class="modotag">${MODOS[C.modo].icone} ${nomeModo(C)}</span>`:''} ${SIT.jogou_hoje?'<span class="ok">✓ Você já correu hoje</span>':''}</div></div>`;
   $('#hojeCard').innerHTML=html;
   renderMissoes(); renderF2Card(); try{ desenharMapa(); }catch(e){ console.error(e); }
+  if(!$('#objsVil').innerHTML){ const li=(L,ids)=>ids.map(id=>`<div><img src="${imgObjeto(id,4).toDataURL()}" alt="">${esc(L[id].nome)}</div>`).join('');
+    $('#objsVil').innerHTML='<b>⛔ VILÕES · DESVIE</b>'+li(VILOES,IDS_VILOES); $('#objsEnt').innerHTML='<b>✅ ENTREGAS · PEGUE</b>'+li(ENTREGAS,IDS_ENTREGAS); }
 }
 function countdown(){
   const st=estado(), box=$('#countdown'); let alvo, rot;
@@ -2024,25 +2314,27 @@ async function comecar(id){
   await spritesProntos; try{ await document.fonts.load('8px "Press Start 2P"'); }catch(e){}
   montarPista();
   JOGO && JOGO.destruir();
-  const C=infoFase(faseJogo), opJ={ fase:faseJogo, mundo:C.mundo, dia:C.dia, meta:C.meta, tema:C.tema, mascote:id, sprites:SPRITES, audioCtx:AC_SFX, onHud:atualizarHud, onFim:fimDaCorrida };
+  const C=infoFase(faseJogo), opJ={ fase:faseJogo, etapa:C.etapa, rotulo: C.bonus?'FASE BÔNUS':`FASE ${C.etapa}-${C.ie} · ${nomeEtapa(C).toUpperCase()}`, mundo:C.mundo, dia:C.dia, meta:C.meta, tema:C.tema, mascote:id, sprites:SPRITES, audioCtx:AC_SFX, onHud:atualizarHud, onFim:fimDaCorrida };
   montarControles(C.modo);
   JOGO = C.modo ? criarMini(C.modo, $('#tela'), opJ) : criarJogo($('#tela'), opJ);
   JOGO.iniciar();
 }
 const CTRL_MINI = {
   kart:   [['esq','◀'],['poder'],['dir','▶']],
+  pista:  [['esq','◀'],['acao','PULAR'],['dir','▶'],['poder']],
   tetris: [['esq','◀'],['acao','⟳'],['dir','▶'],['baixo','▼'],['poder']],
   bubble: [['esq','◀'],['acao','LANÇAR'],['dir','▶'],['poder']],
   pacman: [['vazio'],['cima','▲'],['vazio'],['esq','◀'],['baixo','▼'],['dir','▶'],['poder']],
 };
-const DICA_MINI = { kart:'◀ ▶ viram o kart. Recolha pastas para o turbo. No computador: setas e P.',
+const DICA_MINI = { kart:'◀ ▶ viram o kart. Desvie dos vilões e pegue as entregas para o turbo. No computador: setas e P.',
+  pista:'◀ ▶ trocam de faixa e PULAR passa por cima dos vilões baixos. A barreira RI de Auditoria só se desvia. Também dá para deslizar o dedo na tela.',
   tetris:'◀ ▶ movem, ⟳ gira, ▼ desce rápido. O poder limpa três prateleiras. No computador: setas, espaço gira, P.',
   bubble:'Toque na tela para mirar e soltar, ou use ◀ ▶ e LANÇAR. O poder cria uma bolha coringa.',
-  pacman:'Deslize o dedo na tela ou use as setas. As pastas grandes param os relógios por alguns segundos.' };
+  pacman:'Deslize o dedo na tela ou use as setas. NOVADO e Auditoria param os vilões por alguns segundos.' };
 function montarControles(modo){
   const box=$('#ctrlMini'), pul=$('.controles');
   if(!modo){ box.hidden=true; box.innerHTML=''; pul.hidden=false; pul.style.display=''; $('#pista').style.display=''; $('#dicaJogo').textContent='Toque em PULAR (ou na tela). Segure para pular mais alto. No computador: espaço pula, P usa o poder.'; return; }
-  pul.hidden=true; pul.style.display='none'; $('#pista').style.display = modo==='kart' ? '' : 'none';
+  pul.hidden=true; pul.style.display='none'; $('#pista').style.display = (modo==='kart'||modo==='pista') ? '' : 'none';
   const L=CTRL_MINI[modo], dir=L.filter(x=>x[0]!=='poder'), cols = modo==='pacman'?3:dir.length;
   box.innerHTML = `<div class="lin" style="grid-template-columns:repeat(${cols},1fr)">${dir.map(([a,t])=>a==='vazio'?'<span class="vazio"></span>':`<button data-acao="${a}" class="${a==='baixo'&&modo==='tetris'?'sec':''}">${t}</button>`).join('')}</div>
     <button class="btn-poder" id="btnPoderMini"><div class="carga" style="height:0"></div><span>PODER<br>0/10</span></button>`;
@@ -2128,7 +2420,7 @@ function renderResultado(){
     $('#rSub').textContent = `${c.nome} · ${C.bonus?'Fase bônus: '+C.tema.nome : `Fase ${C.etapa}-${C.ie}: ${nomeEtapa(C)}${C.modo?' · '+nomeModo(C):''}${C.tema?' · '+C.tema.nome:''}`}` + (r.esgotou?' · tempo esgotado':'') + (r.meta ? (r.bateuMeta?` · 🎯 desafio de ${r.meta} completo`:` · desafio: ${r.meta}`) : '');
   }
   $('#rPontos').textContent = r ? r.pontos : '—';
-  $('#rProcL').textContent = r && r.fase && infoFase(r.fase).modo ? rotuloItem(infoFase(r.fase)) : 'Pastas';
+  $('#rProcL').textContent = r && r.fase && infoFase(r.fase).modo ? rotuloItem(infoFase(r.fase)) : 'Entregas';
   $('#rProc').textContent = r && r.processos!=null ? `${r.processos}${r.meta?'/'+r.meta:''}` : '—';
   $('#rTempo').textContent = r && r.tempo ? `${Math.round(r.tempo/1000)}s` : '—';
   $('#rTrop').textContent = r && r.tropecos!=null ? r.tropecos : '—';
@@ -2862,12 +3154,13 @@ function pintarMapa(cv){
   MAPA.nos.forEach(n=>{ const c=n.c, feito=hist[c.data], hj=c.data===h, passou=c.data<h;
     const r=hj?9+Math.sin(MAPA.t*6)*1.2:8;
     ctx.fillStyle='rgba(0,0,0,.25)'; ctx.beginPath(); ctx.ellipse(n.x,n.y+5,r,r*.5,0,0,7); ctx.fill();
-    ctx.fillStyle = feito ? '#ffd34d' : c.modo ? COR_MODO[c.modo] : hj ? '#ffffff' : passou ? '#8a8f9e' : '#f4f0e6';
+    const mini = c.modo && c.modo!=='pista';
+    ctx.fillStyle = feito ? '#ffd34d' : mini ? COR_MODO[c.modo] : hj ? '#ffffff' : passou ? '#8a8f9e' : '#f4f0e6';
     ctx.beginPath(); ctx.arc(n.x,n.y,r,0,7); ctx.fill(); ctx.lineWidth=2; ctx.strokeStyle=feito?'#c9902a':'#0b1530'; ctx.stroke();
     if(hj){ ctx.strokeStyle='#f47a1f'; ctx.lineWidth=2; ctx.beginPath(); ctx.arc(n.x,n.y,r+4,0,7); ctx.stroke(); atual=n; }
     ctx.font=`6px ${PX}`; ctx.textAlign='center';
     if(feito){ ctx.strokeStyle='#5a3a00'; ctx.lineWidth=2; ctx.beginPath(); ctx.moveTo(n.x-4,n.y); ctx.lineTo(n.x-1,n.y+3); ctx.lineTo(n.x+4,n.y-3); ctx.stroke(); }
-    else if(c.modo){ ctx.fillStyle='#fff'; ctx.fillText(LETRA_MODO[c.modo], n.x+.5, n.y+3); }
+    else if(mini){ ctx.fillStyle='#fff'; ctx.fillText(LETRA_MODO[c.modo], n.x+.5, n.y+3); }
     else { ctx.fillStyle=passou?'#e9ecf3':'#0b2f7a'; ctx.fillText(String(c.ie), n.x+.5, n.y+3); }
     if(c.tema) estrelaMapa(ctx, n.x+8, n.y-9, '#ffd34d', 4); });
   // marcador do jogador
